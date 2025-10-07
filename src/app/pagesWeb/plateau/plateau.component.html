@@ -1,1 +1,23 @@
-<p>plateau works!</p>
+<div class="plateau-container">
+  <button
+    class="help-btn"
+    *ngIf="!showRules"
+  (click)="toggleRules()">
+  ?
+  </button>
+
+  <div class="game-board">
+    <p>Plateau de jeu ici</p>
+  </div>
+
+  <div class="rules-panel" [class.open]="showRules">
+    <div class="rules-header">
+      <h2>Règles du jeu</h2>
+      <button class="close-btn" (click)="toggleRules()">✕</button>
+    </div>
+
+    <div class="rules-content">
+      <regles></regles>
+    </div>
+  </div>
+</div>

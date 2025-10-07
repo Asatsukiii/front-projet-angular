@@ -1,10 +1,14 @@
 import { Component } from '@angular/core';
 
 @Component({
-  selector: 'plateau',
+  selector: 'app-plateau',
   templateUrl: './plateau.component.html',
-  styleUrl: './plateau.component.scss'
+  styleUrls: ['./plateau.component.scss']
 })
 export class PlateauComponent {
+  showRules = false;
 
+  toggleRules() {
+    this.showRules = !this.showRules;
+  }
 }
