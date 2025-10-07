@@ -1,8 +1,20 @@
 <nav>
-  <div>
-    <mat-nav-list>
+  <div class="nav-container">
+    <mat-nav-list class="nav-left">
       <span
         *ngFor="let link of links"
+        class="nav-item"
+        [routerLink]="link.href"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: true }"
+      >
+        {{ link.name }}
+      </span>
+    </mat-nav-list>
+
+    <mat-nav-list class="nav-right">
+      <span
+        *ngFor="let link of authLinks"
         class="nav-item"
         [routerLink]="link.href"
         routerLinkActive="active"

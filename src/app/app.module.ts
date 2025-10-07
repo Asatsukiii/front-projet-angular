@@ -20,23 +20,25 @@ import { ClassementComponent } from "./pagesWeb/classement/classement.component"
 @NgModule({
   declarations: [
     AppComponent,
+    SigninComponent,
+    LoginComponent,
     HomeComponent,
     PlateauComponent,
     JoueurComponent,
     ClassementComponent,
     NavbarComponent,
-
   ],
   imports: [
     BrowserModule,
     BrowserAnimationsModule,
     RouterModule,
     AppRoutingModule,
+    FormsModule,
     MatListModule,
     HttpClientModule,
     FormsModule,
   ],
   providers: [],
-  bootstrap: [AppComponent],
+  bootstrap: [AppComponent]
 })
 export class AppModule {}

@@ -1,42 +1,40 @@
-@use "theme";
-
 nav {
   height: 80px;
   background: linear-gradient(
       to right,
-      #ffdd57,  /* jaune */
-      #e74c3c,  /* rouge */
-      #2ecc71,  /* vert */
-      #3498db   /* bleu */
+      #ffdd57,
+      #e74c3c,
+      #2ecc71,
+      #3498db
   );
 
-  div {
+  .nav-container {
     height: 100%;
     display: flex;
     align-items: center;
+    justify-content: space-between;
+    padding: 0 2rem;
   }
-}
 
-mat-nav-list {
-  margin-left: 50px;
-  display: flex;
-  flex-direction: row;
-  width: auto;
+  mat-nav-list {
+    display: flex;
+    flex-direction: row;
+    gap: 3rem;
 
-  span {
-    font-size: 1.5rem;
-    color: theme.$white;
-    margin-right: 1rem;
-    cursor: pointer;
-    transition: transform 0.3s, color 0.3s;
+    .nav-item {
+      font-size: 1.5rem;
+      color: #fff;
+      cursor: pointer;
+      transition: transform 0.3s, color 0.3s;
 
-    &:hover {
-      transform: scale(1.2);
-      color: #ffffff;
+      &:hover {
+        transform: scale(1.2);
+        color: #ffffff;
+      }
+    }
+
+    .nav-item.active {
+      font-weight: 700;
     }
   }
-}
-
-.nav-item.active {
-  font-weight: 700;
 }
