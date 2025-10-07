@@ -1,1 +1,17 @@
-<p>signin works!</p>
+<div class="signin-container">
+  <h2>Sign in</h2>
+
+  <form (ngSubmit)="onSignin()" #loginForm="ngForm">
+    <label for="pseudo">Pseudo:</label>
+    <input
+      type="text"
+      id="pseudo"
+      name="pseudo"
+      [(ngModel)]="pseudo"
+      required
+      placeholder="Enter your pseudo"
+    />
+
+    <button type="submit" [disabled]="!loginForm.form.valid">Submit</button>
+  </form>
+</div>
