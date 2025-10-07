@@ -6,6 +6,7 @@ import { JoueurComponent } from './pagesWeb/joueur/joueur.component';
 import { ClassementComponent } from './pagesWeb/classement/classement.component';
 import { LoginComponent } from './pagesWeb/login/login.component';
 import { SigninComponent } from './pagesWeb/signin/signin.component';
+import { ReglesComponent } from "./pagesWeb/regles/regles.component"
 
 const routes: Routes = [
   { path: '', redirectTo: '/home', pathMatch: 'full' },
@@ -14,6 +15,7 @@ const routes: Routes = [
   { path: 'plateau', component: PlateauComponent },
   { path: 'joueur', component: JoueurComponent },
   { path: 'classement', component: ClassementComponent },
+  { path: 'regles', component: ReglesComponent },
 
   { path: 'login', component: LoginComponent },
   { path: 'signin', component: SigninComponent },

@@ -11,6 +11,7 @@ import { ClassementComponent } from './pagesWeb/classement/classement.component'
 import { FormsModule } from '@angular/forms';
 import { NavbarComponent } from "./navbar/navbar.component"
 import { MatListModule } from '@angular/material/list';
+import { ReglesComponent } from "./pagesWeb/regles/regles.component"
 
 @NgModule({
   declarations: [
@@ -21,6 +22,7 @@ import { MatListModule } from '@angular/material/list';
     PlateauComponent,
     JoueurComponent,
     ClassementComponent,
+    ReglesComponent,
     NavbarComponent
   ],
   imports: [

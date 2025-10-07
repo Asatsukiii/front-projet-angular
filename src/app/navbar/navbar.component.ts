@@ -10,7 +10,8 @@ export class NavbarComponent {
     { name: 'Accueil', href: '/home' },
     { name: 'Plateau', href: '/plateau' },
     { name: 'Joueur', href: '/joueur' },
-    { name: 'Classement', href: '/classement' }
+    { name: 'Classement', href: '/classement' },
+    { name: 'Regles', href: '/regles' }
   ];
 
   authLinks = [
