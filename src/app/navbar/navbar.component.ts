@@ -12,4 +12,9 @@ export class NavbarComponent {
     { name: 'Joueur', href: '/joueur' },
     { name: 'Classement', href: '/classement' }
   ];
+
+  authLinks = [
+    { name: 'Login', href: '/login' },
+    { name: 'Sign in', href: '/signin' }
+  ];
 }
