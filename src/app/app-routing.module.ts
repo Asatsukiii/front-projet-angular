@@ -1,9 +1,9 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { HomeComponent } from './home/home.component';
-import { PlateauComponent } from './plateau/plateau.component';
-import { JoueurComponent } from './joueur/joueur.component';
-import { ClassementComponent } from './classement/classement.component';
+import { HomeComponent } from './pagesWeb/home/home.component';
+import { PlateauComponent } from './pagesWeb/plateau/plateau.component';
+import { JoueurComponent } from './pagesWeb/joueur/joueur.component';
+import { ClassementComponent } from './pagesWeb/classement/classement.component';
 
 const routes: Routes = [
   // Route par défaut → redirige vers /home
