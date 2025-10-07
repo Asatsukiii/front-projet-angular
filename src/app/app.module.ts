@@ -16,6 +16,8 @@ import { HttpClientModule } from "@angular/common/http"
 import { PlateauComponent } from "./pagesWeb/plateau/plateau.component"
 import { JoueurComponent } from "./pagesWeb/joueur/joueur.component"
 import { ClassementComponent } from "./pagesWeb/classement/classement.component"
+import { SigninComponent } from "./pagesWeb/signin/signin.component"
+import { LoginComponent } from "./pagesWeb/login/login.component"
 
 @NgModule({
   declarations: [
