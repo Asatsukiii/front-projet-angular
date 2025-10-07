@@ -1,1 +1,14 @@
-<p>plateau works!</p>
+<div class="plateau">
+  <div
+    *ngFor="let c of casesAffichees; index as i"
+    class="case"
+    [ngClass]="[
+        c.couleur.toLowerCase(),
+        c.type.toLowerCase(),
+        i === 112 ? 'centre' : ''
+     ]"
+    [title]="c.couleur + ' - ' + c.type"
+  >
+    {{ c.type ? c.position : '' }}
+  </div>
+</div>

@@ -25,6 +25,7 @@ import { ClassementComponent } from "./pagesWeb/classement/classement.component"
     JoueurComponent,
     ClassementComponent,
     NavbarComponent,
+
   ],
   imports: [
     BrowserModule,
@@ -32,6 +33,8 @@ import { ClassementComponent } from "./pagesWeb/classement/classement.component"
     RouterModule,
     AppRoutingModule,
     MatListModule,
+    HttpClientModule,
+    FormsModule,
   ],
   providers: [],
   bootstrap: [AppComponent],
