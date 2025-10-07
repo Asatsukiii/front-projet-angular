@@ -2,22 +2,18 @@
 
 nav {
   height: 80px;
-  background: linear-gradient(to right, theme.$common-purple, theme.$common-red);
+  background: linear-gradient(
+      to right,
+      #ffdd57,  /* jaune */
+      #e74c3c,  /* rouge */
+      #2ecc71,  /* vert */
+      #3498db   /* bleu */
+  );
 
   div {
     height: 100%;
     display: flex;
     align-items: center;
-
-    img {
-      margin-left: 20px;
-      height: 60px;
-      transition: 0.3s;
-
-      &:hover {
-        transform: scale(1.1);
-      }
-    }
   }
 }
 
@@ -25,16 +21,22 @@ mat-nav-list {
   margin-left: 50px;
   display: flex;
   flex-direction: row;
-  width: 250px;
+  width: auto;
 
-  span,
-  a {
-    font-size: large;
+  span {
+    font-size: 1.5rem;
     color: theme.$white;
-    transition: 0.3s;
+    margin-right: 1rem;
+    cursor: pointer;
+    transition: transform 0.3s, color 0.3s;
 
     &:hover {
       transform: scale(1.2);
+      color: #ffffff;
     }
   }
+}
+
+.nav-item.active {
+  font-weight: 700;
 }

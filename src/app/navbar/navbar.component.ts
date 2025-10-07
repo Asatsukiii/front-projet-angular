@@ -1,16 +1,15 @@
-import { Component } from "@angular/core"
-import { Link } from "models/links.model"
+import { Component } from '@angular/core';
 
 @Component({
-  selector: "navbar",
-  templateUrl: "./navbar.component.html",
-  styleUrls: ["./navbar.component.scss"],
+  selector: 'app-navbar',
+  templateUrl: './navbar.component.html',
+  styleUrls: ['./navbar.component.scss']
 })
 export class NavbarComponent {
-  links: Link[] = []
-
-  constructor() {
-    this.links.push({ name: "Étudiants", href: "etudiants" })
-    this.links.push({ name: "Filières", href: "filieres" })
-  }
+  links = [
+    { name: 'Accueil', href: '/home' },
+    { name: 'Plateau', href: '/plateau' },
+    { name: 'Joueur', href: '/joueur' },
+    { name: 'Classement', href: '/classement' }
+  ];
 }
