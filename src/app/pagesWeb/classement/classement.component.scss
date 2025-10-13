@@ -1,0 +1,53 @@
+.classement-container {
+  max-width: 800px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background: #f9f9f9;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  text-align: center;
+
+  h1 {
+    margin-bottom: 1.5rem;
+    font-size: 2rem;
+    color: #333;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+
+    thead {
+      background-color: #333;
+      color: #fff;
+    }
+
+    th, td {
+      padding: 0.8rem;
+      text-align: center;
+    }
+
+    tbody tr:nth-child(even) {
+      background-color: #f1f1f1;
+    }
+
+    tbody tr:nth-child(odd) {
+      background-color: #fff;
+    }
+
+    tbody tr:first-child {
+      background-color: gold;
+      font-weight: bold;
+    }
+
+    tbody tr:nth-child(2) {
+      background-color: silver;
+      font-weight: bold;
+    }
+
+    tbody tr:nth-child(3) {
+      background-color: #cd7f32; // bronze
+      font-weight: bold;
+    }
+  }
+}
