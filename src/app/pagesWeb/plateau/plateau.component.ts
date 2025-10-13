@@ -12,6 +12,7 @@ export class PlateauComponent implements OnInit {
   cases: CasePlateau[] = [];
   lignes: CasePlateau[][] = [];
   casesAffichees: CasePlateau[] = [];
+  showRules = false;
 
   constructor(private caseService: CasePlateauService) {}
 
@@ -120,4 +121,7 @@ export class PlateauComponent implements OnInit {
   }
 
 
+  toggleRules() {
+    this.showRules = !this.showRules;
+  }
 }

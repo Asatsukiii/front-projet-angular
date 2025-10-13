@@ -18,6 +18,7 @@ import { JoueurComponent } from "./pagesWeb/joueur/joueur.component"
 import { ClassementComponent } from "./pagesWeb/classement/classement.component"
 import { SigninComponent } from "./pagesWeb/signin/signin.component"
 import { LoginComponent } from "./pagesWeb/login/login.component"
+import { ReglesComponent } from "./pagesWeb/regles/regles.component"
 
 @NgModule({
   declarations: [
@@ -28,7 +29,8 @@ import { LoginComponent } from "./pagesWeb/login/login.component"
     PlateauComponent,
     JoueurComponent,
     ClassementComponent,
-    NavbarComponent,
+    ReglesComponent,
+    NavbarComponent
   ],
   imports: [
     BrowserModule,

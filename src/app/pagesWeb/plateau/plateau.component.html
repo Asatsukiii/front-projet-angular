@@ -1,14 +1,36 @@
-<div class="plateau">
-  <div
-    *ngFor="let c of casesAffichees; index as i"
-    class="case"
-    [ngClass]="[
+<div class="plateau-container">
+  <button
+    class="help-btn"
+    *ngIf="!showRules"
+  (click)="toggleRules()">
+  ?
+  </button>
+
+  <div class="game-board">
+    <div class="plateau">
+      <div
+        *ngFor="let c of casesAffichees; index as i"
+        class="case"
+        [ngClass]="[
         c.couleur.toLowerCase(),
         c.type.toLowerCase(),
         i === 112 ? 'centre' : ''
      ]"
-    [title]="c.couleur + ' - ' + c.type"
-  >
-    {{ c.type ? c.position : '' }}
+        [title]="c.couleur + ' - ' + c.type"
+      >
+        {{ c.type ? c.position : '' }}
+      </div>
+    </div>
+  </div>
+
+  <div class="rules-panel" [class.open]="showRules">
+    <div class="rules-header">
+      <h2>Règles du jeu</h2>
+      <button class="close-btn" (click)="toggleRules()">✕</button>
+    </div>
+
+    <div class="rules-content">
+      <regles></regles>
+    </div>
   </div>
 </div>
