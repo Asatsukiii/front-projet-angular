@@ -2,7 +2,6 @@
   <button class="help-btn" *ngIf="!showRules" (click)="toggleRules()">?</button>
 
   <div class="board-wrapper">
-    <!-- 🎲 Dice -->
     <div class="dice-container">
       <div class="dice" [class.rolling]="isRolling">
         {{ diceValue || '-' }}
@@ -31,6 +30,9 @@
       </div>
     </div>
   </div>
+  <div class="current-pion-info" *ngIf="currentPionCase">
+    Pion: <span [ngClass]="pionColor.toLowerCase()">{{ pionColor }}</span> - Position: {{ currentPionCase.position }}
+  </div>
 
   <div class="rules-panel" [class.open]="showRules">
     <div class="rules-header">
@@ -42,3 +44,4 @@
     </div>
   </div>
 </div>
+

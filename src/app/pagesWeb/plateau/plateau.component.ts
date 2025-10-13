@@ -15,9 +15,8 @@ export class PlateauComponent implements OnInit {
 
   pionIndex = 0;
   currentPionCase?: CasePlateau;
-
+  pionVisible = false;
   pionColor: 'VERT' | 'JAUNE' | 'BLEU' | 'ROUGE' = 'VERT';
-
   diceValue = 0;
   isRolling = false;
 
@@ -33,7 +32,10 @@ export class PlateauComponent implements OnInit {
         this.casesAffichees = this.lignes.flat();
         this.listeCasesSequence = this.genererListeSequence(data);
 
-        this.pionIndex = this.findPionStartIndex();
+        // Pion starts in ecurie (position 15 of its color)
+        this.pionIndex = this.listeCasesSequence.findIndex(
+          c => c.couleur === this.pionColor && c.position === 15
+        );
         this.currentPionCase = this.listeCasesSequence[this.pionIndex];
       },
       error: (err) => console.error('Erreur chargement plateau:', err)
@@ -50,14 +52,43 @@ export class PlateauComponent implements OnInit {
     setTimeout(() => {
       this.movePion(value);
       this.isRolling = false;
-    }, 1000);
+    }, 500);
   }
 
   movePion(steps: number) {
-    this.pionIndex += steps;
-    if (this.pionIndex >= this.listeCasesSequence.length) {
-      this.pionIndex = this.pionIndex % this.listeCasesSequence.length;
+    if (!this.currentPionCase) return
+
+    if (this.currentPionCase.couleur === this.pionColor && this.currentPionCase.position === 15) {
+      if (steps === 6) {
+        const startIndex = this.findPionStartIndex();
+        if (startIndex >= 0) {
+          this.pionIndex = startIndex;
+          this.currentPionCase = this.listeCasesSequence[startIndex];
+          this.pionVisible = true;
+        }
+      }
+      return;
     }
+
+    if (this.currentPionCase.couleur === this.pionColor && this.currentPionCase.position === 14) return;
+
+    let newIndex = this.pionIndex;
+
+    for (let i = 0; i < steps; i++) {
+      let nextIndex = newIndex + 1;
+      if (nextIndex >= this.listeCasesSequence.length) nextIndex = 0;
+
+      const nextCase = this.listeCasesSequence[nextIndex];
+
+      if (nextCase.couleur === this.pionColor && nextCase.position === 14) {
+        newIndex = nextIndex;
+        break;
+      }
+
+      newIndex = nextIndex;
+    }
+
+    this.pionIndex = newIndex;
     this.currentPionCase = this.listeCasesSequence[this.pionIndex];
   }
 
