@@ -2,6 +2,7 @@
   <button class="help-btn" *ngIf="!showRules" (click)="toggleRules()">?</button>
 
   <div class="board-wrapper">
+    <!-- 🎲 Dice -->
     <div class="dice-container">
       <div class="dice" [class.rolling]="isRolling">
         {{ diceValue || '-' }}
@@ -14,24 +15,21 @@
         <div
           *ngFor="let c of casesAffichees; index as i"
           class="case"
-          [ngClass]="[c.couleur.toLowerCase(), i === 112 ? 'centre' : '']"
+          [ngClass]="[c.couleur.toLowerCase(), c.type ? c.type.toLowerCase() : '', i === 112 ? 'centre' : '']"
           [title]="c.couleur + ' ' + c.position"
         >
-          {{ c.position }}
+          {{ c.type ? c.position : '' }}
+
+          <img
+            *ngIf="currentPionCase === c"
+            src="../../assets/Pion.png"
+            class="pion"
+            [ngClass]="pionColor.toLowerCase()"
+            alt="pion"
+          />
         </div>
       </div>
     </div>
-  </div>
-
-  <div class="sequence-list">
-    <h3>Séquence de parcours</h3>
-    <ul>
-      <li *ngFor="let c of listeCasesSequence">
-        <span class="badge" [ngClass]="c.couleur.toLowerCase()">
-          {{ c.couleur }} {{ c.position }}
-        </span>
-      </li>
-    </ul>
   </div>
 
   <div class="rules-panel" [class.open]="showRules">
