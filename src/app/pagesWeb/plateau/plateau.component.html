@@ -1,26 +1,37 @@
 <div class="plateau-container">
-  <button
-    class="help-btn"
-    *ngIf="!showRules"
-  (click)="toggleRules()">
-  ?
-  </button>
+  <button class="help-btn" *ngIf="!showRules" (click)="toggleRules()">?</button>
 
-  <div class="game-board">
-    <div class="plateau">
-      <div
-        *ngFor="let c of casesAffichees; index as i"
-        class="case"
-        [ngClass]="[
-        c.couleur.toLowerCase(),
-        c.type.toLowerCase(),
-        i === 112 ? 'centre' : ''
-     ]"
-        [title]="c.couleur + ' - ' + c.type"
-      >
-        {{ c.type ? c.position : '' }}
+  <div class="board-wrapper">
+    <div class="dice-container">
+      <div class="dice" [class.rolling]="isRolling">
+        {{ diceValue || '-' }}
+      </div>
+      <button (click)="rollDice()" [disabled]="isRolling">Lancer le dé</button>
+    </div>
+
+    <div class="game-board">
+      <div class="plateau">
+        <div
+          *ngFor="let c of casesAffichees; index as i"
+          class="case"
+          [ngClass]="[c.couleur.toLowerCase(), i === 112 ? 'centre' : '']"
+          [title]="c.couleur + ' ' + c.position"
+        >
+          {{ c.position }}
+        </div>
       </div>
     </div>
+  </div>
+
+  <div class="sequence-list">
+    <h3>Séquence de parcours</h3>
+    <ul>
+      <li *ngFor="let c of listeCasesSequence">
+        <span class="badge" [ngClass]="c.couleur.toLowerCase()">
+          {{ c.couleur }} {{ c.position }}
+        </span>
+      </li>
+    </ul>
   </div>
 
   <div class="rules-panel" [class.open]="showRules">
@@ -28,7 +39,6 @@
       <h2>Règles du jeu</h2>
       <button class="close-btn" (click)="toggleRules()">✕</button>
     </div>
-
     <div class="rules-content">
       <regles></regles>
     </div>
