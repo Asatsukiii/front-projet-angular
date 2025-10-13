@@ -33,9 +33,8 @@ export class PlateauComponent implements OnInit {
         this.casesAffichees = this.lignes.flat();
         this.listeCasesSequence = this.genererListeSequence(data);
 
-        this.pionIndex = this.findPionStartIndex();
         this.pionOnBoard = false;
-        this.currentPionCase = undefined; // will display under board
+        this.currentPionCase = undefined;
       },
       error: (err) => console.error('Erreur chargement plateau:', err)
     });
@@ -55,39 +54,44 @@ export class PlateauComponent implements OnInit {
   }
 
   movePion(steps: number) {
-    // If pawn is not on board yet
     if (!this.pionOnBoard) {
       if (steps === 6) {
-        // Move to start of track (position 1)
         const startIndex = this.listeCasesSequence.findIndex(
           c => c.couleur === this.pionColor && c.position === 1
         );
         if (startIndex >= 0) {
           this.pionIndex = startIndex;
           this.currentPionCase = this.listeCasesSequence[this.pionIndex];
-          this.pionOnBoard = true; // now pawn is on the board
+          this.pionOnBoard = true;
         }
       }
-      return; // otherwise, stay in stable display
+      return;
     }
 
-    // Normal movement for pawn already on board
     if (!this.currentPionCase) return;
 
-    if (this.currentPionCase.position === 14 && this.currentPionCase.couleur === this.pionColor) return;
+    const currentPos = this.currentPionCase.position;
+    const currentColor = this.currentPionCase.couleur;
+
+    if (currentColor === this.pionColor && currentPos >= 14 && currentPos < 21) {
+      const requiredRoll = currentPos === 14 ? 1 : currentPos - 14;
+      if (steps === requiredRoll) {
+        const targetPos = currentPos === 14 ? 16 : currentPos + 1;
+        const nextIndex = this.listeCasesSequence.findIndex(
+          c => c.couleur === this.pionColor && c.position === targetPos
+        );
+        if (nextIndex >= 0) {
+          this.pionIndex = nextIndex;
+          this.currentPionCase = this.listeCasesSequence[this.pionIndex];
+        }
+      }
+      return;
+    }
 
     let newIndex = this.pionIndex;
     for (let i = 0; i < steps; i++) {
       let nextIndex = newIndex + 1;
       if (nextIndex >= this.listeCasesSequence.length) nextIndex = 0;
-
-      const nextCase = this.listeCasesSequence[nextIndex];
-
-      if (nextCase.couleur === this.pionColor && nextCase.position === 14) {
-        newIndex = nextIndex;
-        break;
-      }
-
       newIndex = nextIndex;
     }
 
@@ -95,26 +99,32 @@ export class PlateauComponent implements OnInit {
     this.currentPionCase = this.listeCasesSequence[this.pionIndex];
   }
 
-  private findPionStartIndex(): number {
-    return this.listeCasesSequence.findIndex(
-      c => c.couleur === this.pionColor && c.position === 1
-    );
-  }
-
   private genererListeSequence(cases: CasePlateau[]): CasePlateau[] {
-    const result: CasePlateau[] = [];
-    const get = (couleur: string, pos: number) =>
-      cases.find(c => c.couleur === couleur && c.position === pos)!;
+    const seq: CasePlateau[] = [];
+    const add = (color: string, positions: number[]) => {
+      seq.push(
+        ...cases
+          .filter(c => c.couleur === color && positions.includes(c.position))
+          .sort((a, b) => positions.indexOf(a.position) - positions.indexOf(b.position))
+      );
+    };
 
-    for (let i = 1; i <= 13; i++) result.push(get('VERT', i));
-    result.push(get('JAUNE', 14));
-    for (let i = 1; i <= 13; i++) result.push(get('JAUNE', i));
-    result.push(get('BLEU', 14));
-    for (let i = 1; i <= 13; i++) result.push(get('BLEU', i));
-    result.push(get('ROUGE', 14));
-    for (let i = 1; i <= 13; i++) result.push(get('ROUGE', i));
-    result.push(get('VERT', 14));
-    return result;
+    add('VERT', Array.from({ length: 13 }, (_, i) => i + 1));
+    add('JAUNE', [14]);
+    add('JAUNE', Array.from({ length: 13 }, (_, i) => i + 1));
+    add('BLEU', [14]);
+    add('BLEU', Array.from({ length: 13 }, (_, i) => i + 1));
+    add('ROUGE', [14]);
+    add('ROUGE', Array.from({ length: 13 }, (_, i) => i + 1));
+    add('VERT', [14]);
+
+    const home = [16, 17, 18, 19, 20, 21];
+    add('VERT', home);
+    add('JAUNE', home);
+    add('BLEU', home);
+    add('ROUGE', home);
+
+    return seq;
   }
 
   generateGrille(cases: CasePlateau[]): CasePlateau[][] {
