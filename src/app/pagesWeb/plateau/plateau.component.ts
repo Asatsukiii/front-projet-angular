@@ -15,8 +15,9 @@ export class PlateauComponent implements OnInit {
 
   pionIndex = 0;
   currentPionCase?: CasePlateau;
-  pionVisible = false;
+  pionOnBoard = false;
   pionColor: 'VERT' | 'JAUNE' | 'BLEU' | 'ROUGE' = 'VERT';
+
   diceValue = 0;
   isRolling = false;
 
@@ -32,11 +33,9 @@ export class PlateauComponent implements OnInit {
         this.casesAffichees = this.lignes.flat();
         this.listeCasesSequence = this.genererListeSequence(data);
 
-        // Pion starts in ecurie (position 15 of its color)
-        this.pionIndex = this.listeCasesSequence.findIndex(
-          c => c.couleur === this.pionColor && c.position === 15
-        );
-        this.currentPionCase = this.listeCasesSequence[this.pionIndex];
+        this.pionIndex = this.findPionStartIndex();
+        this.pionOnBoard = false;
+        this.currentPionCase = undefined; // will display under board
       },
       error: (err) => console.error('Erreur chargement plateau:', err)
     });
@@ -52,28 +51,32 @@ export class PlateauComponent implements OnInit {
     setTimeout(() => {
       this.movePion(value);
       this.isRolling = false;
-    }, 500);
+    }, 1000);
   }
 
   movePion(steps: number) {
-    if (!this.currentPionCase) return
-
-    if (this.currentPionCase.couleur === this.pionColor && this.currentPionCase.position === 15) {
+    // If pawn is not on board yet
+    if (!this.pionOnBoard) {
       if (steps === 6) {
-        const startIndex = this.findPionStartIndex();
+        // Move to start of track (position 1)
+        const startIndex = this.listeCasesSequence.findIndex(
+          c => c.couleur === this.pionColor && c.position === 1
+        );
         if (startIndex >= 0) {
           this.pionIndex = startIndex;
-          this.currentPionCase = this.listeCasesSequence[startIndex];
-          this.pionVisible = true;
+          this.currentPionCase = this.listeCasesSequence[this.pionIndex];
+          this.pionOnBoard = true; // now pawn is on the board
         }
       }
-      return;
+      return; // otherwise, stay in stable display
     }
 
-    if (this.currentPionCase.couleur === this.pionColor && this.currentPionCase.position === 14) return;
+    // Normal movement for pawn already on board
+    if (!this.currentPionCase) return;
+
+    if (this.currentPionCase.position === 14 && this.currentPionCase.couleur === this.pionColor) return;
 
     let newIndex = this.pionIndex;
-
     for (let i = 0; i < steps; i++) {
       let nextIndex = newIndex + 1;
       if (nextIndex >= this.listeCasesSequence.length) nextIndex = 0;

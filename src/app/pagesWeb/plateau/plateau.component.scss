@@ -199,11 +199,6 @@
   pointer-events: none;
 }
 
-.pion.vert  { filter: hue-rotate(100deg) saturate(4) brightness(1.2); }
-.pion.jaune { filter: hue-rotate(50deg)  saturate(4) brightness(1.2); }
-.pion.bleu  { filter: hue-rotate(200deg) saturate(4) brightness(1.2); }
-.pion.rouge { filter: hue-rotate(0deg)   saturate(4) brightness(1.2); }
-
 @keyframes dice-roll {
   0% { transform: rotate(0deg); }
   25% { transform: rotate(90deg); }
