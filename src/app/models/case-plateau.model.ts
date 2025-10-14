@@ -5,5 +5,5 @@ export interface CasePlateau {
   id_case?: number;
   position: number;
   couleur: CouleurCase;
-  type: TypeCase;
+  typeCase: TypeCase;
 }

@@ -15,10 +15,10 @@
         <div
           *ngFor="let c of casesAffichees; index as i"
           class="case"
-          [ngClass]="[c.couleur.toLowerCase(), c.type ? c.type.toLowerCase() : '', i === 112 ? 'centre' : '']"
+          [ngClass]="[c.couleur.toLowerCase(), c.typeCase ? c.typeCase.toLowerCase() : '', i === 112 ? 'centre' : '']"
           [title]="c.couleur + ' ' + c.position"
         >
-          {{ c.type ? c.position : '' }}
+          {{ c.typeCase ? c.position : '' }}
 
           <img
             *ngIf="currentPionCase === c"
