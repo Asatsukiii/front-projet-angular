@@ -80,13 +80,12 @@ export class PlateauComponent implements OnInit {
     const currentPos = this.currentPionCase.position;
     const currentColor = this.currentPionCase.couleur;
 
-    // Si on est déjà dans l'échelle (entrée incluse) pour sa couleur
-    // (tu utilises ici la convention 14 = entrée, 16..21 = cases d'échelle, par ex.)
+
     if (currentColor === this.pionColor && currentPos >= 14 && currentPos <= 21) {
       console.log('On est dans l\'échelle (ou sur l\'entrée) :', this.currentPionCase);
-      const requiredRoll = currentPos === 14 ? 1 : (currentPos - 14); // correspondance avec ta logique
+      const requiredRoll = currentPos === 14 ? 1 : (currentPos - 14);
       if (steps === requiredRoll) {
-        // calcule la position cible dans ta numérotation
+
         const targetPos = currentPos === 14 ? 16 : currentPos + 1;
         const nextIndex = this.listeCasesSequence.findIndex(
           c => c.couleur === this.pionColor && c.position === targetPos
@@ -103,7 +102,7 @@ export class PlateauComponent implements OnInit {
       return;
     }
 
-    // Déplacement normal sur la piste : avancer pas à pas
+
     let newIndex = this.pionIndex;
 
     for (let i = 0; i < steps; i++) {
@@ -112,14 +111,14 @@ export class PlateauComponent implements OnInit {
 
       const nextCase = this.listeCasesSequence[nextIndex];
 
-      // Si la prochaine case est la case 14 de MA couleur, on s'arrête sur elle (entrée de l'échelle)
+
       if (nextCase.couleur === this.pionColor && nextCase.position === 14) {
         newIndex = nextIndex;
         console.log('On atteint la case 14 (entrée de l\'échelle) - on s\'arrête dessus.');
-        break; // on s'arrête, on ne continue pas au-delà
+        break;
       }
 
-      // Sinon on avance normalement d'un pas
+
       newIndex = nextIndex;
     }
 
@@ -195,7 +194,7 @@ export class PlateauComponent implements OnInit {
     lignes.push([
       find('JAUNE', 14),
       ...Array.from({ length: 6 }, (_, i) => find('JAUNE', i + 16)),
-      find('BLEU', 85),
+      find('BLEU', 22),
       ...Array.from({ length: 6 }, (_, i) => find('ROUGE', 21 - i)),
       find('ROUGE', 14),
     ]);

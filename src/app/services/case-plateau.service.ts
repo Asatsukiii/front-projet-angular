@@ -8,17 +8,12 @@ import { MOCK_CASES_PLATEAU } from "../mock/cases-plateau.mock"
 
 @Injectable({ providedIn: 'root' })
 export class CasePlateauService {
-  private apiUrl = `${environment.apiUrl}/cases-plateau/`;
+  private apiUrl = `${environment.apiUrl}/caseplateau`;
 
   constructor(private http: HttpClient) {}
 
   getAll(): Observable<CasePlateau[]> {
-    //return this.http.get<CasePlateau[]>(this.apiUrl);
-    return of(MOCK_CASES_PLATEAU);
+    return this.http.get<CasePlateau[]>(this.apiUrl);
   }
-
-  // getById(id: number): Observable<CasePlateau> {
-  //   return this.http.get<CasePlateau>(`${this.apiUrl}${id}/`);
-  // }
 
 }
