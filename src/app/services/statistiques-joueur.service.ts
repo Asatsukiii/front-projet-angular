@@ -3,9 +3,11 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { StatistiquesJoueur } from '../models/statistiques.model';
 
-@Injectable({ providedIn: 'root' })
+@Injectable({
+  providedIn: 'root'
+})
 export class StatistiquesJoueurService {
-  private apiUrl = 'http://localhost:8000/api/statistiques-joueurs/';
+  private apiUrl = 'http://localhost:8080/statistiquesjoueur';
 
   constructor(private http: HttpClient) {}
 
@@ -13,8 +15,8 @@ export class StatistiquesJoueurService {
     return this.http.get<StatistiquesJoueur[]>(this.apiUrl);
   }
 
-  getById(id: number): Observable<StatistiquesJoueur> {
-    return this.http.get<StatistiquesJoueur>(`${this.apiUrl}${id}/`);
+  getByJoueurId(id: number): Observable<StatistiquesJoueur> {
+    return this.http.get<StatistiquesJoueur>(`${this.apiUrl}/joueur/${id}`);
   }
 
   create(data: StatistiquesJoueur): Observable<StatistiquesJoueur> {
@@ -22,10 +24,10 @@ export class StatistiquesJoueurService {
   }
 
   update(id: number, data: StatistiquesJoueur): Observable<StatistiquesJoueur> {
-    return this.http.put<StatistiquesJoueur>(`${this.apiUrl}${id}/`, data);
+    return this.http.put<StatistiquesJoueur>(`${this.apiUrl}/${id}`, data);
   }
 
   delete(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}${id}/`);
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 }
