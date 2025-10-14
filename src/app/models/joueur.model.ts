@@ -1,5 +1,5 @@
 export interface Joueur {
-  id_joueur?: number;
+  id?: number;
   pseudo: string;
   date_inscription?: Date;
 }

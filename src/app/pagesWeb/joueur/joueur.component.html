@@ -1,1 +1,9 @@
-<p>joueur works!</p>
+<div *ngIf="joueur">
+  <h2>Welcome, {{ joueur.pseudo }}!</h2>
+  <p>ID: {{ joueur.id }}</p>
+  <p>Registered on: {{ joueur.date_inscription | date:'medium' }}</p>
+</div>
+
+<div *ngIf="!joueur">
+  <p>Loading joueur information...</p>
+</div>
