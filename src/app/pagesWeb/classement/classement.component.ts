@@ -1,4 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { StatistiquesJoueurService } from '../../services/statistiques-joueur.service';
+import { StatistiquesJoueur } from '../../models/statistiques.model';
 
 interface JoueurClassement {
   position: number;
@@ -13,12 +15,39 @@ interface JoueurClassement {
   templateUrl: './classement.component.html',
   styleUrls: ['./classement.component.scss']
 })
-export class ClassementComponent {
+export class ClassementComponent implements OnInit {
 
-  joueurs: JoueurClassement[] = [
-    { position: 1, pseudo: 'Diana', partiesJouees: 10, partiesGagnees: 5, tauxVictoire: 50 },
-    { position: 2, pseudo: 'Alice', partiesJouees: 5, partiesGagnees: 2, tauxVictoire: 40 },
-    { position: 3, pseudo: 'Bob', partiesJouees: 8, partiesGagnees: 3, tauxVictoire: 37.5 },
-    { position: 4, pseudo: 'Charlie', partiesJouees: 2, partiesGagnees: 0, tauxVictoire: 0 }
-  ];
+  joueurs: JoueurClassement[] = [];
+  loading = true;
+  error: string | null = null;
+
+  constructor(private statistiquesService: StatistiquesJoueurService) {}
+
+  ngOnInit(): void {
+    this.statistiquesService.getAll().subscribe({
+      next: (stats: StatistiquesJoueur[]) => {
+        this.joueurs = stats
+          .map(stat => ({
+            pseudo: stat.joueur?.pseudo ?? 'Inconnu',
+            partiesJouees: stat.partiesJouees,
+            partiesGagnees: stat.partiesGagnees,
+            tauxVictoire: stat.partiesJouees > 0
+              ? (stat.partiesGagnees / stat.partiesJouees) * 100
+              : 0
+          }))
+          .sort((a, b) => b.tauxVictoire - a.tauxVictoire)
+          .map((joueur, index) => ({
+            ...joueur,
+            position: index + 1
+          }));
+
+        this.loading = false;
+      },
+      error: (err) => {
+        console.error('Erreur lors du chargement du classement:', err);
+        this.error = 'Impossible de charger le classement.';
+        this.loading = false;
+      }
+    });
+  }
 }

@@ -1,7 +1,10 @@
 <div class="classement-container">
   <h1>🏆 Classement des Joueurs</h1>
 
-  <table>
+  <div *ngIf="loading">Chargement...</div>
+  <div *ngIf="error" class="error">{{ error }}</div>
+
+  <table *ngIf="!loading && !error">
     <thead>
     <tr>
       <th>#</th>
