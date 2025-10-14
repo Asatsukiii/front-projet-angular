@@ -2,12 +2,13 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Joueur } from '../models/joueur.model';
+import {environment} from "../../environments/environment";
 
 @Injectable({
   providedIn: 'root'
 })
 export class JoueurService {
-  private apiUrl = 'http://localhost:8000/api/joueurs/';
+  private apiUrl = `${environment.apiUrl}/joueurs/`;
 
   constructor(private http: HttpClient) {}
 
@@ -24,6 +25,10 @@ export class JoueurService {
 
   getJoueurById(id: number): Observable<Joueur> {
     return this.http.get<Joueur>(`${this.apiUrl}${id}/`);
+  }
+
+  getJoueurByPseudo(pseudo: string): Observable<Joueur> {
+    return this.http.get<Joueur>(`${this.apiUrl}${pseudo}/`);
   }
 
   updateJoueur(id: number, joueur: Joueur): Observable<Joueur> {
