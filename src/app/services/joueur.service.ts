@@ -2,13 +2,14 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Joueur } from '../models/joueur.model';
+import {environment} from "../../environments/environment";
 
 @Injectable({
   providedIn: 'root'
 })
 export class JoueurService {
   // Correct backend URL
-  private apiUrl = 'http://localhost:8080/joueurs/';
+  private apiUrl = `${environment.apiUrl}/joueurs/`;
 
   constructor(private http: HttpClient) {}
 

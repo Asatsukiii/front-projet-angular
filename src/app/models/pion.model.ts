@@ -4,10 +4,17 @@ import { CasePlateau } from './case-plateau.model';
 export type EtatPion = 'ECURIE' | 'EN_JEU' | 'ARRIVE';
 
 export interface Pion {
-  id?: number;
-  joueurPartie: number;
+  idPion?: number;
+  joueurPartieId: number;
   casePlateau?: number | null;
   etatPion: EtatPion;
+  joueurPartie?: {
+    id: number;
+    couleur: string;
+    partie?: {
+      id: number;
+    };
+  };
 
   // Relations
   JoueurPartie?: JoueurPartie;

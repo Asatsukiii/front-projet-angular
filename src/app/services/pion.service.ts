@@ -18,8 +18,12 @@ export class PionService {
     return this.http.get<Pion>(`${this.apiUrl}/${id}`);
   }
 
-  getByJoueur(idJoueurPartie: number): Observable<Pion[]> {
-    return this.http.get<Pion[]>(`${this.apiUrl}/joueur/${idJoueurPartie}`);
+  getByJoueurPartie(idJoueurPartie: number): Observable<Pion[]> {
+    return this.http.get<Pion[]>(`${this.apiUrl}/joueur-partie/${idJoueurPartie}`);
+  }
+
+  getPionsByJoueur(idJoueur: number): Observable<Pion[]> {
+    return this.http.get<Pion[]>(`${this.apiUrl}/joueur/${idJoueur}`);
   }
 
   getByCase(idCasePlateau: number): Observable<Pion[]> {
@@ -29,6 +33,7 @@ export class PionService {
   getByEtat(etat: string): Observable<Pion[]> {
     return this.http.get<Pion[]>(`${this.apiUrl}/etat/${etat}`);
   }
+
   create(data: Pion): Observable<Pion> {
     return this.http.post<Pion>(this.apiUrl, data);
   }

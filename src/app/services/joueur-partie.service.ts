@@ -2,10 +2,12 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { JoueurPartie } from '../models/joueur-partie.model';
+import {environment} from "../../environments/environment";
 
 @Injectable({ providedIn: 'root' })
 export class JoueurPartieService {
-  private apiUrl = 'http://localhost:8000/api/joueur-parties/';
+  private apiUrl = `${environment.apiUrl}/joueurparties/`;
+
 
   constructor(private http: HttpClient) {}
 
@@ -21,11 +23,15 @@ export class JoueurPartieService {
     return this.http.post<JoueurPartie>(this.apiUrl, data);
   }
 
-  update(id: number, data: JoueurPartie): Observable<JoueurPartie> {
+  updateJoueurPartie(id: number, data: JoueurPartie): Observable<JoueurPartie> {
     return this.http.put<JoueurPartie>(`${this.apiUrl}${id}/`, data);
   }
 
   delete(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}${id}/`);
   }
+  getByJoueurId(joueurId:number):  Observable<JoueurPartie[]> {
+    return this.http.get<JoueurPartie[]>(`${this.apiUrl}joueur/${joueurId}`);
+  }
+
 }
