@@ -5,8 +5,8 @@
 export const environment = {
   production: false,
   useMocks: true,
-  apiUrl: `http://localhost:8080`,
-}
+  apiUrl: 'http://localhost:8080',
+};
 
 /*
  * For easier debugging in development mode, you can import the following file

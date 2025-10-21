@@ -1,1 +1,27 @@
-<p>classement works!</p>
+<div class="classement-container">
+  <h1>🏆 Classement des Joueurs</h1>
+
+  <div *ngIf="loading">Chargement...</div>
+  <div *ngIf="error" class="error">{{ error }}</div>
+
+  <table *ngIf="!loading && !error">
+    <thead>
+    <tr>
+      <th>#</th>
+      <th>Pseudo</th>
+      <th>Parties Jouées</th>
+      <th>Parties Gagnées</th>
+      <th>Taux de Victoire</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr *ngFor="let joueur of joueurs">
+      <td>{{ joueur.position }}</td>
+      <td>{{ joueur.pseudo }}</td>
+      <td>{{ joueur.partiesJouees }}</td>
+      <td>{{ joueur.partiesGagnees }}</td>
+      <td>{{ joueur.tauxVictoire | number:'1.0-1' }} %</td>
+    </tr>
+    </tbody>
+  </table>
+</div>
