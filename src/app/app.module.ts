@@ -10,8 +10,6 @@ import { NavbarComponent } from "navbar/navbar.component"
 import { MatListModule } from "@angular/material/list"
 import { HomeComponent } from "pagesWeb/home/home.component"
 import { FormsModule } from "@angular/forms"
-import { MatIconModule } from "@angular/material/icon"
-import { MatButtonModule } from "@angular/material/button"
 import { HttpClientModule } from "@angular/common/http"
 import { PlateauComponent } from "./pagesWeb/plateau/plateau.component"
 import { JoueurComponent } from "./pagesWeb/joueur/joueur.component"
@@ -40,7 +38,6 @@ import { ReglesComponent } from "./pagesWeb/regles/regles.component"
     FormsModule,
     MatListModule,
     HttpClientModule,
-    FormsModule,
   ],
   providers: [],
   bootstrap: [AppComponent]
