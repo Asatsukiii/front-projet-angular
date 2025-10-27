@@ -12,8 +12,9 @@ export class JoueurService {
 
   constructor(private http: HttpClient) {}
 
+
   createJoueur(pseudo: string): Observable<Joueur> {
-    return this.http.post<Joueur>(this.apiUrl, { pseudo });
+    return this.http.post<Joueur>(`${this.apiUrl}?pseudo=${encodeURIComponent(pseudo)}`, null);
   }
 
   getAllJoueurs(): Observable<Joueur[]> {
