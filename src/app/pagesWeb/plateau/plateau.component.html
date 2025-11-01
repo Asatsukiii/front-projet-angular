@@ -2,10 +2,20 @@
   <button class="help-btn" *ngIf="!showRules" (click)="toggleRules()">?</button>
 
   <div class="board-wrapper">
-    <!-- 🎲 Dice -->
+
+    <div class="pion-status">
+      <div class="status green">{{ getPionStatus('VERT') }}</div>
+      <div class="status red">{{ getPionStatus('ROUGE') }}</div>
+    </div>
+    <!-- Dice -->
     <div class="dice-container">
-      <div class="dice" [class.rolling]="isRolling">
-        {{ diceValue || '-' }}
+      <div class="dice-wrapper">
+        <div class="dice" [class.rolling]="isRolling">
+          {{ diceValue || '-' }}
+        </div>
+        <div class="active-pion-indicator" [ngClass]="pionColor.toLowerCase()">
+          {{ pionColor }}
+        </div>
       </div>
       <button (click)="rollDice()" [disabled]="isRolling">Lancer le dé</button>
     </div>
@@ -20,22 +30,31 @@
         >
           {{ c.typeCase ? c.position : '' }}
 
+          <!-- Pions -->
           <img
-            *ngIf="currentPionCase === c"
+            *ngIf="pions['VERT'].onBoard && casesAffichees[pions['VERT'].index] === c"
             src="../../assets/Pion_vert.png"
             class="pion"
-            alt="pion"
+            alt="pion vert"
+          />
+          <img
+            *ngIf="pions['ROUGE'].onBoard && casesAffichees[pions['ROUGE'].index] === c"
+            src="../../assets/Pion_rouge.png"
+            class="pion"
+            alt="pion rouge"
           />
         </div>
       </div>
 
-      <!-- ✅ Restart button -->
+      <!-- Restart Button -->
       <div class="restart-container">
-        <button (click)="restartPion()">Restart Pion</button>
+        <button (click)="restartPions()">Restart Pions</button>
       </div>
     </div>
+  </div>
 
-    <div class="rules-panel" [class.open]="showRules">
+  <!-- Rules Panel -->
+  <div class="rules-panel" [class.open]="showRules">
     <div class="rules-header">
       <h2>Règles du jeu</h2>
       <button class="close-btn" (click)="toggleRules()">✕</button>
