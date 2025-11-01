@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { JoueurService } from '../../services/joueur.service';
 import { Joueur } from '../../models/joueur.model';
-import { AuthService } from "../../services/auth.service"
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'signin',
@@ -26,32 +26,41 @@ export class SigninComponent implements OnInit {
   }
 
   onSignin() {
+    // Already logged in
     if (this.alreadyLoggedIn) {
-      alert('You are already connected. Please logout first.');
+      alert(`You are already connected as ${this.connectedPseudo}. Please logout first to create a new account.`);
       return;
     }
 
+    // Empty pseudo
     if (!this.pseudo.trim()) {
-      alert('Veuillez entrer un pseudo');
+      alert('Please enter a pseudo to create an account.');
       return;
     }
 
     this.joueurService.createJoueur(this.pseudo).subscribe({
       next: (joueur: Joueur) => {
         if (joueur.id !== undefined) {
-          // ✅ Use AuthService for session
+          // Login automatically after creation
           this.authService.login(joueur.id, joueur.pseudo);
+          alert(`Account created successfully! Welcome, ${joueur.pseudo}.`);
           this.router.navigate(['/joueur']);
         }
       },
       error: (err) => {
-        console.error('Erreur création joueur', err);
-        alert('Impossible de créer le joueur.');
+        // Handle both 409 (conflict) and 500 (existing pseudo fallback)
+        if (err.status === 409 || err.status === 500) {
+          alert('You already have an account with this pseudo. Please login instead.');
+        } else {
+          console.error('Error creating account:', err);
+          alert('Failed to create account. Please try again later.');
+        }
       }
     });
   }
 
   onLogout() {
     this.authService.logout();
+    alert('You have been logged out.');
   }
 }
