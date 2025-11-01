@@ -3,8 +3,8 @@ import { CasePlateauService } from '../../services/case-plateau.service';
 import { CasePlateau } from '../../models/case-plateau.model';
 
 interface PionState {
-  index: number;      // current index in the sequence
-  onBoard: boolean;   // whether the pion is on the board
+  index: number;
+  onBoard: boolean;
 }
 
 @Component({
@@ -17,7 +17,7 @@ export class PlateauComponent implements OnInit {
   lignes: CasePlateau[][] = [];
   casesAffichees: CasePlateau[] = [];
 
-  // Separate sequences for green and red pions
+  // Separate sequences for green and red
   listeCasesSequence: { [key: string]: CasePlateau[] } = { VERT: [], ROUGE: [] };
 
   pions: { [key: string]: PionState } = {
@@ -45,7 +45,6 @@ export class PlateauComponent implements OnInit {
     });
   }
 
-  // === Dice roll ===
   rollDice() {
     if (this.isRolling) return;
     this.isRolling = true;
@@ -70,7 +69,7 @@ export class PlateauComponent implements OnInit {
 
     if (!pion.onBoard) {
       if (steps === 6) {
-        pion.index = 0; // start at first position
+        pion.index = 0;
         pion.onBoard = true;
       }
       return;
@@ -79,19 +78,67 @@ export class PlateauComponent implements OnInit {
     let idx = pion.index;
     const currentCase = sequence[idx];
 
-    // Ladder logic for positions 16 → 21
-    if (currentCase.position >= 16 && currentCase.position <= 21) {
-      const requiredRoll = currentCase.position - 15; // 16->1, 17->2, ..., 21->6
-      if (steps === requiredRoll && idx < sequence.length - 1) idx++;
+    // Ladder logic
+    if (currentCase.position === 14 && currentCase.couleur === color) {
+      // Moving onto ladder first step (16)
+      if (steps === 1) {
+        const nextIndex = sequence.findIndex(
+          c => c.couleur === color && c.position === 16
+        );
+        if (nextIndex >= 0) idx = nextIndex;
+      }
+      pion.index = idx;
+      return;
+    }
+
+    // If already on ladder
+    if (currentCase.position >= 16 && currentCase.position <= 20 && currentCase.couleur === color) {
+      const nextPosition = currentCase.position + 1;
+      const requiredRoll = nextPosition - 15; // 16->1, 17->2, ..., 20->6
+      if (steps === requiredRoll) {
+        const nextIndex = sequence.findIndex(
+          c => c.couleur === color && c.position === nextPosition
+        );
+        if (nextIndex >= 0) idx = nextIndex;
+      }
       pion.index = idx;
       return;
     }
 
     // Normal movement along sequence
     for (let i = 0; i < steps; i++) {
-      if (idx < sequence.length - 1) idx++;
+      if (idx < sequence.length - 1) {
+        const nextCase = sequence[idx + 1];
+
+        // Stop at the pion's own 14 no matter what
+        if (nextCase.position === 14 && nextCase.couleur === color) {
+          idx++; // move to 14
+          break; // stop moving, even if steps remain
+        }
+
+        idx++;
+      }
     }
+
     pion.index = idx;
+  }
+
+
+// Helper to get the CasePlateau object for a pion
+  getPionCase(color: 'VERT' | 'ROUGE'): CasePlateau | undefined {
+    const pion = this.pions[color];
+    if (!pion.onBoard) return undefined;
+    const sequence = this.listeCasesSequence[color];
+    return sequence[pion.index];
+  }
+
+  getPionStatus(color: 'VERT' | 'ROUGE'): string {
+    const pion = this.pions[color];
+    if (!pion.onBoard) return `${color}: Écurie`;
+    const currentCase = this.listeCasesSequence[color][pion.index];
+    if (!currentCase) return `${color}: ?`;
+    if (currentCase.position >= 16) return `${color}: Ladder ${currentCase.position}`;
+    return `${color}: ${currentCase.couleur} ${currentCase.position}`;
   }
 
   // === LocalStorage ===
@@ -112,7 +159,6 @@ export class PlateauComponent implements OnInit {
     this.savePionsToStorage();
   }
 
-  // === Sequence generation for green and red pions ===
   private genererListeSequence(cases: CasePlateau[]): { [key: string]: CasePlateau[] } {
     const sequences: { [key: string]: CasePlateau[] } = { VERT: [], ROUGE: [] };
     const add = (color: string, positions: number[], targetColor?: string) => {
@@ -151,13 +197,11 @@ export class PlateauComponent implements OnInit {
     return sequences;
   }
 
-  // === Board display ===
   generateGrille(cases: CasePlateau[]): CasePlateau[][] {
     const lignes: CasePlateau[][] = [];
     const find = (couleur: string, position: number) =>
       cases.find(c => c.couleur === couleur && c.position === position)!;
 
-    // Example simplified board structure
     lignes.push([ ...Array(6).fill(find('JAUNE', 15)), find('JAUNE', 13), find('BLEU', 14), find('BLEU', 1), ...Array(6).fill(find('BLEU', 15)) ]);
 
     let jaunePosition = 12, bleuPosition1 = 16, bleuPosition2 = 2;
@@ -166,21 +210,30 @@ export class PlateauComponent implements OnInit {
       jaunePosition--; bleuPosition1++; bleuPosition2++;
     }
 
-    // Rest of the board (simplified)
-    return lignes;
-  }
+    lignes.push([ ...Array.from({ length: 7 }, (_, i) => find('JAUNE', i + 1)), find('BLEU', 21), ...Array.from({ length: 7 }, (_, i) => find('BLEU', i + 7)) ]);
+    lignes.push([ find('JAUNE', 14), ...Array.from({ length: 6 }, (_, i) => find('JAUNE', i + 16)), find('BLEU', 22), ...Array.from({ length: 6 }, (_, i) => find('ROUGE', 21 - i)), find('ROUGE', 14) ]);
+    lignes.push([ ...Array.from({ length: 7 }, (_, i) => find('VERT', 13 - i)), find('VERT', 21), ...Array.from({ length: 7 }, (_, i) => find('ROUGE', 7 - i)) ]);
 
-  // === Pion position indicator for display ===
-  getPionStatus(color: 'VERT' | 'ROUGE'): string {
-    const pion = this.pions[color];
-    if (!pion.onBoard) return `${color}: Écurie`;
-    const currentCase = this.listeCasesSequence[color][pion.index];
-    if (!currentCase) return `${color}: ?`;
-    if (currentCase.position >= 16) return `${color}: Ladder ${currentCase.position}`;
-    return `${color}: ${currentCase.couleur} ${currentCase.position}`;
+    let vertPosition1 = 6, vertPosition2 = 20, rougePosition = 8;
+    for (let i = 1; i <= 5; i++) {
+      lignes.push([ ...Array(6).fill(find('VERT', 15)), find('VERT', vertPosition1), find('VERT', vertPosition2), find('ROUGE', rougePosition), ...Array(6).fill(find('ROUGE', 15)) ]);
+      vertPosition1--; vertPosition2--; rougePosition++;
+    }
+
+    lignes.push([ ...Array(6).fill(find('VERT', 15)), find('VERT', 1), find('VERT', 14), find('ROUGE', 13), ...Array(6).fill(find('ROUGE', 15)) ]);
+
+    return lignes;
   }
 
   toggleRules() {
     this.showRules = !this.showRules;
   }
+
+  getPionPath(color: 'VERT' | 'ROUGE'): string {
+    const sequence = this.listeCasesSequence[color];
+    if (!sequence || sequence.length === 0) return '';
+
+    return sequence.map(c => `${c.couleur[0]}${c.position}`).join(' → ');
+  }
+
 }

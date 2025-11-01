@@ -3,10 +3,10 @@
 
   <div class="board-wrapper">
 
-    <div class="pion-status">
-      <div class="status green">{{ getPionStatus('VERT') }}</div>
-      <div class="status red">{{ getPionStatus('ROUGE') }}</div>
-    </div>
+<!--    <div class="pion-status">-->
+<!--      <div class="status green">{{ getPionStatus('VERT') }}</div>-->
+<!--      <div class="status red">{{ getPionStatus('ROUGE') }}</div>-->
+<!--    </div>-->
     <!-- Dice -->
     <div class="dice-container">
       <div class="dice-wrapper">
@@ -32,13 +32,13 @@
 
           <!-- Pions -->
           <img
-            *ngIf="pions['VERT'].onBoard && casesAffichees[pions['VERT'].index] === c"
+            *ngIf="pions['VERT'].onBoard && getPionCase('VERT') === c"
             src="../../assets/Pion_vert.png"
             class="pion"
             alt="pion vert"
           />
           <img
-            *ngIf="pions['ROUGE'].onBoard && casesAffichees[pions['ROUGE'].index] === c"
+            *ngIf="pions['ROUGE'].onBoard && getPionCase('ROUGE') === c"
             src="../../assets/Pion_rouge.png"
             class="pion"
             alt="pion rouge"
