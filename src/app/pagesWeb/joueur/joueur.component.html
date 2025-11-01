@@ -1,68 +1,78 @@
-<div class="joueur-container" *ngIf="joueur as j; else loading">
-  <!-- 🧑 Profile -->
-  <section class="card profile-card">
-    <h2>{{ joueur.pseudo }}</h2>
-    <div class="stats">
-      <div>
-        <span class="value">{{ getPartiesJoueesCount() }}</span>
-        <span class="label">Parties jouées</span>
-      </div>
-      <div>
-        <span class="value">{{ getPartiesGagneesCount() }}</span>
-        <span class="label">Parties gagnées</span>
-      </div>
-      <div>
-        <span class="value">{{ getEnCoursCount() }}</span>
-        <span class="label">En cours</span>
-      </div>
-      <div>
-        <span class="value">{{ getTermineesCount() }}</span>
-        <span class="label">Terminées</span>
-      </div>
-    </div>
-  </section>
-
-  <!-- 🕹️ Parties -->
-  <section class="card">
-    <h2>Historique des Parties</h2>
-    <ul class="game-list">
-      <li *ngFor="let jp of joueurParties">
-        <div class="info">
-          <strong>Partie #{{ jp.partieId }}</strong>
-          <span class="state">
-          <!-- l’état vient de Partie (relation) -->
-          État : {{ jp.partie?.etat_partie ?? 'Inconnu' }}
-            <!-- la couleur vient de JoueurPartie -->
-          • Couleur : {{ jp.couleur }}
-            <ng-container *ngIf="jp.classement !== null && jp.classement !== undefined">
-            • Classement : {{ jp.classement }}
-          </ng-container>
-        </span>
-        </div>
-      </li>
-    </ul>
-  </section>
-
-  <!-- 🧩 Pions -->
-  <section class="card">
-    <h2>♟️ Pions du joueur</h2>
-
-    <ul class="game-list" *ngIf="pion && pion.length > 0; else noPions">
-      <li *ngFor="let p of pion">
-        <div class="info">
-          <span> • Partie {{ p.joueurPartie?.partie?.id || 'Inconnue' }}</span>
-          <span> • Couleur : {{ p.joueurPartie?.couleur || 'Inconnue' }}</span>
-          <span> • État du pion : {{ p.etatPion }}</span>
-        </div>
-      </li>
-    </ul>
-
-    <ng-template #noPions>
-      <p>Aucun pion trouvé pour ce joueur.</p>
-    </ng-template>
+<div *ngIf="notLoggedIn" class="joueur-container">
+  <section class="not-logged-in-card card">
+    <p>
+      You are not logged in. Please
+      <a routerLink="/login">login</a>
+      to see your player info.
+    </p>
   </section>
 </div>
-<ng-template #loading>
-  <p>Chargement du joueur...</p>
-</ng-template>
 
+<!-- Logged-in content -->
+<div class="joueur-container" *ngIf="!notLoggedIn">
+  <ng-container *ngIf="joueur; else loading">
+    <!-- 🧑 Profile -->
+    <section class="card profile-card">
+      <h2>{{ joueur.pseudo }}</h2>
+      <div class="stats">
+        <div>
+          <span class="value">{{ getPartiesJoueesCount() }}</span>
+          <span class="label">Parties jouées</span>
+        </div>
+        <div>
+          <span class="value">{{ getPartiesGagneesCount() }}</span>
+          <span class="label">Parties gagnées</span>
+        </div>
+        <div>
+          <span class="value">{{ getEnCoursCount() }}</span>
+          <span class="label">En cours</span>
+        </div>
+        <div>
+          <span class="value">{{ getTermineesCount() }}</span>
+          <span class="label">Terminées</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 🕹️ Parties -->
+    <section class="card">
+      <h2>Historique des Parties</h2>
+      <ul class="game-list">
+        <li *ngFor="let jp of joueurParties">
+          <div class="info">
+            <strong>Partie #{{ jp.partieId }}</strong>
+            <span class="state">
+              État : {{ jp.partie?.etat_partie ?? 'Inconnu' }}
+              • Couleur : {{ jp.couleur }}
+              <ng-container *ngIf="jp.classement !== null && jp.classement !== undefined">
+                • Classement : {{ jp.classement }}
+              </ng-container>
+            </span>
+          </div>
+        </li>
+      </ul>
+    </section>
+
+    <!-- 🧩 Pions -->
+    <section class="card">
+      <h2>♟️ Pions du joueur</h2>
+      <ul class="game-list" *ngIf="pion && pion.length > 0; else noPions">
+        <li *ngFor="let p of pion">
+          <div class="info">
+            <span> • Partie {{ p.joueurPartie?.partie?.id || 'Inconnue' }}</span>
+            <span> • Couleur : {{ p.joueurPartie?.couleur || 'Inconnue' }}</span>
+            <span> • État du pion : {{ p.etatPion }}</span>
+          </div>
+        </li>
+      </ul>
+      <ng-template #noPions>
+        <p>Aucun pion trouvé pour ce joueur.</p>
+      </ng-template>
+    </section>
+  </ng-container>
+
+  <!-- Loading -->
+  <ng-template #loading>
+    <p>Chargement du joueur...</p>
+  </ng-template>
+</div>

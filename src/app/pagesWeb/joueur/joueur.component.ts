@@ -1,10 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { JoueurService } from '../../services/joueur.service';
 import { Joueur } from '../../models/joueur.model';
-import {Couleur, JoueurPartie} from "../../models/joueur-partie.model";
-import {JoueurPartieService} from "../../services/joueur-partie.service";
-import {Pion} from "../../models/pion.model";
-import {PionService} from "../../services/pion.service";
+import { Couleur, JoueurPartie } from "../../models/joueur-partie.model";
+import { JoueurPartieService } from "../../services/joueur-partie.service";
+import { Pion } from "../../models/pion.model";
+import { PionService } from "../../services/pion.service";
 
 @Component({
   selector: 'app-joueur',
@@ -13,11 +13,16 @@ import {PionService} from "../../services/pion.service";
 })
 export class JoueurComponent implements OnInit {
 
-  joueur?: Joueur; // le ? permet de gérer le cas undefined
+  joueur?: Joueur;
   joueurParties: JoueurPartie[] = [];
   pion: Pion[] = [];
+  notLoggedIn: boolean = false; // ✅ New flag
 
-  constructor(private joueurService: JoueurService, private joueurPartieService: JoueurPartieService, private pionService:PionService) {}
+  constructor(
+    private joueurService: JoueurService,
+    private joueurPartieService: JoueurPartieService,
+    private pionService: PionService
+  ) {}
 
   ngOnInit(): void {
     const joueurID = sessionStorage.getItem('joueurID');
@@ -27,37 +32,32 @@ export class JoueurComponent implements OnInit {
 
       // 🔹 Charger le joueur
       this.joueurService.getJoueurById(id).subscribe({
-        next: (joueur) => {this.joueur = joueur;
-        console.log('✅ Joueur chargé :', joueur);
-        },
+        next: (joueur) => { this.joueur = joueur; },
         error: (err) => console.error('❌ Erreur chargement joueur:', err)
       });
 
       // 🔹 Charger les parties associées
       this.joueurPartieService.getByJoueurId(id).subscribe({
-        next: (data) => {this.joueurParties = data;
-          console.log('✅ Parties chargé :', data);
-          // 🔹 Charger les pions du joueur
+        next: (data) => {
+          this.joueurParties = data;
+
           // 🔹 Charger les pions du joueur
           this.pionService.getPionsByJoueur(id).subscribe({
-            next: (pions) => {
-              this.pion = pions;
-              console.log('✅ Pions chargés :', pions);
-            },
+            next: (pions) => { this.pion = pions; },
             error: (err) => console.error('❌ Erreur chargement des pions :', err)
           });
         },
         error: (err) => console.error('❌ Erreur chargement des parties:', err)
       });
 
-
     } else {
-      console.error('❌ Aucun joueurID trouvé dans le sessionStorage');
+      // 🔹 If no joueurID in sessionStorage
+      console.warn('❌ Aucun joueurID trouvé dans le sessionStorage');
+      this.notLoggedIn = true; // ✅ Set the flag
     }
   }
 
-
-  // 🧠 Ces méthodes évitent les erreurs si joueur ou parties est undefined
+  // 🧠 Méthodes de comptage
   getEnCoursCount(): number {
     return this.joueurParties.filter(jp => jp.partie?.etat_partie === 'EN_COURS').length;
   }

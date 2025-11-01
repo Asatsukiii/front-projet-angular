@@ -82,3 +82,23 @@ $transition: 0.25s ease;
     }
   }
 }
+
+.not-logged-in-card {
+  @extend .card; // Reuse the card style
+  text-align: center;
+  color: $text-dark;
+  background: #fff3f3; // Slightly red/pink background for attention
+  border-left: 4px solid #f87171; // Red accent for warning
+  font-weight: 500;
+
+  a {
+    color: $primary;
+    text-decoration: underline;
+    margin-left: 0.25rem;
+
+    &:hover {
+      color: darken($primary, 10%);
+    }
+  }
+}
+
