@@ -1,26 +1,40 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { JoueurService } from "../../services/joueur.service";
-import { Joueur } from "../../models/joueur.model";
+import { JoueurService } from '../../services/joueur.service';
+import { Joueur } from '../../models/joueur.model';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss']
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
   pseudo: string = '';
+  alreadyLoggedIn: boolean = false;
+  connectedPseudo: string | null = null;
 
-  constructor(private joueurService: JoueurService, private router: Router) {}
+  constructor(
+    private joueurService: JoueurService,
+    private router: Router,
+    private authService: AuthService
+  ) {}
+
+  ngOnInit(): void {
+    this.authService.isLoggedIn$.subscribe(status => (this.alreadyLoggedIn = status));
+    this.authService.pseudo$.subscribe(pseudo => (this.connectedPseudo = pseudo));
+  }
 
   onLogin() {
+    if (this.alreadyLoggedIn) {
+      alert('You are already connected. Please logout first.');
+      return;
+    }
+
     this.joueurService.getJoueurByPseudo(this.pseudo).subscribe({
       next: (joueur: Joueur) => {
-        console.log('Login successful:', joueur);
-
-        // Save joueurID in session storage (value comes from joueur.id)
         if (joueur.id !== undefined) {
-          sessionStorage.setItem('joueurID', joueur.id.toString());
+          this.authService.login(joueur.id, joueur.pseudo);
           this.router.navigate(['/joueur']);
         } else {
           console.error('Joueur ID is undefined');
@@ -31,5 +45,9 @@ export class LoginComponent {
         alert('Pseudo not found. Please check your pseudo or register.');
       }
     });
+  }
+
+  onLogout() {
+    this.authService.logout();
   }
 }

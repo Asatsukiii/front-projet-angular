@@ -1,5 +1,6 @@
 <nav>
   <div class="nav-container">
+    <!-- Left-side navigation -->
     <mat-nav-list class="nav-left">
       <span
         *ngFor="let link of links"
@@ -12,16 +13,26 @@
       </span>
     </mat-nav-list>
 
+    <!-- Right-side authentication / user actions -->
     <mat-nav-list class="nav-right">
-      <span
-        *ngFor="let link of authLinks"
-        class="nav-item"
-        [routerLink]="link.href"
-        routerLinkActive="active"
-        [routerLinkActiveOptions]="{ exact: true }"
-      >
-        {{ link.name }}
-      </span>
+      <!-- If NOT logged in -->
+      <ng-container *ngIf="!isLoggedIn; else loggedInTemplate">
+        <span
+          *ngFor="let link of authLinks"
+          class="nav-item"
+          [routerLink]="link.href"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: true }"
+        >
+          {{ link.name }}
+        </span>
+      </ng-container>
+
+      <!-- If logged in -->
+      <ng-template #loggedInTemplate>
+        <span class="nav-item welcome">👋 Hello, {{ connectedPseudo }}</span>
+        <button class="logout-btn" (click)="logout()">Logout</button>
+      </ng-template>
     </mat-nav-list>
   </div>
 </nav>

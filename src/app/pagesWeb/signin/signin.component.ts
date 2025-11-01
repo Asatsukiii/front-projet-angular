@@ -1,18 +1,36 @@
-import { Component } from '@angular/core';
-import { JoueurService } from "../../services/joueur.service";
-import { Joueur } from "../../models/joueur.model";
-import { Router } from "@angular/router"
+import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
+import { JoueurService } from '../../services/joueur.service';
+import { Joueur } from '../../models/joueur.model';
+import { AuthService } from "../../services/auth.service"
+
 @Component({
   selector: 'signin',
   templateUrl: './signin.component.html',
   styleUrls: ['./signin.component.scss']
 })
-export class SigninComponent {
+export class SigninComponent implements OnInit {
   pseudo: string = '';
+  alreadyLoggedIn: boolean = false;
+  connectedPseudo: string | null = null;
 
-  constructor(private joueurService: JoueurService, private router: Router) {}
+  constructor(
+    private joueurService: JoueurService,
+    private router: Router,
+    private authService: AuthService
+  ) {}
+
+  ngOnInit() {
+    this.authService.isLoggedIn$.subscribe(status => (this.alreadyLoggedIn = status));
+    this.authService.pseudo$.subscribe(pseudo => (this.connectedPseudo = pseudo));
+  }
 
   onSignin() {
+    if (this.alreadyLoggedIn) {
+      alert('You are already connected. Please logout first.');
+      return;
+    }
+
     if (!this.pseudo.trim()) {
       alert('Veuillez entrer un pseudo');
       return;
@@ -20,9 +38,9 @@ export class SigninComponent {
 
     this.joueurService.createJoueur(this.pseudo).subscribe({
       next: (joueur: Joueur) => {
-        console.log('Joueur créé avec succès:', joueur);
         if (joueur.id !== undefined) {
-          sessionStorage.setItem('joueurID', joueur.id.toString());
+          // ✅ Use AuthService for session
+          this.authService.login(joueur.id, joueur.pseudo);
           this.router.navigate(['/joueur']);
         }
       },
@@ -33,5 +51,7 @@ export class SigninComponent {
     });
   }
 
-
+  onLogout() {
+    this.authService.logout();
+  }
 }

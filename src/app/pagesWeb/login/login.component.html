@@ -1,17 +1,24 @@
-<div class="login-container">
-  <h2>Login</h2>
-
-  <form (ngSubmit)="onLogin()" #loginForm="ngForm">
-    <label for="pseudo">Pseudo:</label>
-    <input
-      type="text"
-      id="pseudo"
-      name="pseudo"
-      [(ngModel)]="pseudo"
-      required
-      placeholder="Enter your pseudo"
-    />
-
-    <button type="submit" [disabled]="!loginForm.form.valid">Submit</button>
-  </form>
+<div *ngIf="alreadyLoggedIn; else loginFormTemplate" class="logged-in-message">
+  <p>You are already connected as <strong>{{ connectedPseudo }}</strong>.</p>
+  <button (click)="onLogout()">Logout</button>
 </div>
+
+<ng-template #loginFormTemplate>
+  <div class="login-container">
+    <h2>Login</h2>
+
+    <form (ngSubmit)="onLogin()" #loginForm="ngForm">
+      <label for="pseudo">Pseudo:</label>
+      <input
+        type="text"
+        id="pseudo"
+        name="pseudo"
+        [(ngModel)]="pseudo"
+        required
+        placeholder="Enter your pseudo"
+      />
+
+      <button type="submit" [disabled]="!loginForm.form.valid">Submit</button>
+    </form>
+  </div>
+</ng-template>
