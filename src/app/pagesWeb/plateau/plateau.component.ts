@@ -2,6 +2,11 @@ import { Component, OnInit } from '@angular/core';
 import { CasePlateauService } from '../../services/case-plateau.service';
 import { CasePlateau } from '../../models/case-plateau.model';
 
+interface PionState {
+  index: number;
+  onBoard: boolean;
+}
+
 @Component({
   selector: 'app-plateau',
   templateUrl: './plateau.component.html',
@@ -11,16 +16,17 @@ export class PlateauComponent implements OnInit {
   cases: CasePlateau[] = [];
   lignes: CasePlateau[][] = [];
   casesAffichees: CasePlateau[] = [];
-  listeCasesSequence: CasePlateau[] = [];
+  listeCasesSequence: { [key: string]: CasePlateau[] } = {};
 
-  pionIndex = 0;
-  currentPionCase?: CasePlateau;
-  pionOnBoard = false;
-  pionColor: 'VERT' | 'JAUNE' | 'BLEU' | 'ROUGE' = 'VERT';
+  // Pions state: green and red
+  pions: { [key: string]: PionState } = {
+    VERT: { index: 0, onBoard: false },
+    ROUGE: { index: 0, onBoard: false }
+  };
 
+  pionColor: 'VERT' | 'ROUGE' = 'VERT'; // currently active pion
   diceValue = 0;
   isRolling = false;
-
   showRules = false;
 
   constructor(private caseService: CasePlateauService) {}
@@ -32,14 +38,13 @@ export class PlateauComponent implements OnInit {
         this.lignes = this.generateGrille(data);
         this.casesAffichees = this.lignes.flat();
         this.listeCasesSequence = this.genererListeSequence(data);
-
-        // ✅ Restore pion state from localStorage
-        this.restorePionFromStorage();
+        this.restorePionsFromStorage();
       },
       error: (err) => console.error('Erreur chargement plateau:', err)
     });
   }
 
+  // === Dice ===
   rollDice() {
     if (this.isRolling) return;
     this.isRolling = true;
@@ -48,133 +53,110 @@ export class PlateauComponent implements OnInit {
     this.diceValue = value;
 
     setTimeout(() => {
-      this.movePion(value);
+      this.movePion(this.pionColor, value);
       this.isRolling = false;
-
-      // ✅ Save pion state after moving
-      this.savePionToStorage();
+      this.savePionsToStorage();
+      this.switchPion();
     }, 1000);
   }
 
-  movePion(steps: number) {
-    if (!this.pionOnBoard) {
+  switchPion() {
+    this.pionColor = this.pionColor === 'VERT' ? 'ROUGE' : 'VERT';
+  }
+
+  // === Pion Movement ===
+  movePion(color: 'VERT' | 'ROUGE', steps: number) {
+    const pion = this.pions[color];
+    const sequence = this.listeCasesSequence[color];
+
+    if (!pion.onBoard) {
       if (steps === 6) {
-        const startIndex = this.listeCasesSequence.findIndex(
-          c => c.couleur === this.pionColor && c.position === 1
-        );
-        if (startIndex >= 0) {
-          this.pionIndex = startIndex;
-          this.currentPionCase = this.listeCasesSequence[this.pionIndex];
-          this.pionOnBoard = true;
-
-          // ✅ Save pion state when first placed on board
-          this.savePionToStorage();
-        }
+        pion.index = 0; // start at first position (ecurie -> position 1)
+        pion.onBoard = true;
       }
       return;
     }
 
-    if (!this.currentPionCase) return;
+    let currentIndex = pion.index;
+    const currentCase = sequence[currentIndex];
 
-    const currentPos = this.currentPionCase.position;
-    const currentColor = this.currentPionCase.couleur;
-
-    // Handle "échelle" logic
-    if (currentColor === this.pionColor && currentPos >= 14 && currentPos <= 21) {
-      const requiredRoll = currentPos === 14 ? 1 : (currentPos - 14);
+    // Ladder logic (positions 16-20)
+    const ladderRollMap: Record<number, number> = {16: 1, 17: 2, 18: 3, 19: 4, 20: 5};
+    if (currentCase.position >= 16 && currentCase.position <= 20) {
+      const requiredRoll = ladderRollMap[currentCase.position];
       if (steps === requiredRoll) {
-        const targetPos = currentPos === 14 ? 16 : currentPos + 1;
-        const nextIndex = this.listeCasesSequence.findIndex(
-          c => c.couleur === this.pionColor && c.position === targetPos
-        );
-        if (nextIndex >= 0) {
-          this.pionIndex = nextIndex;
-          this.currentPionCase = this.listeCasesSequence[this.pionIndex];
-
-          // ✅ Save pion state after moving on the ladder
-          this.savePionToStorage();
-        }
+        pion.index = currentIndex + 1;
       }
       return;
     }
 
-    let newIndex = this.pionIndex;
+    // Normal movement along sequence
     for (let i = 0; i < steps; i++) {
-      let nextIndex = newIndex + 1;
-      if (nextIndex >= this.listeCasesSequence.length) nextIndex = 0;
-
-      const nextCase = this.listeCasesSequence[nextIndex];
-
-      if (nextCase.couleur === this.pionColor && nextCase.position === 14) {
-        newIndex = nextIndex;
-        break;
+      if (currentIndex < sequence.length - 1) {
+        currentIndex++;
       }
-
-      newIndex = nextIndex;
     }
-
-    this.pionIndex = newIndex;
-    this.currentPionCase = this.listeCasesSequence[this.pionIndex];
-
-    this.savePionToStorage();
+    pion.index = currentIndex;
   }
 
-  private savePionToStorage() {
-    const pionState = {
-      color: this.pionColor,
-      index: this.pionIndex,
-      onBoard: this.pionOnBoard
-    };
-    localStorage.setItem('pionState', JSON.stringify(pionState));
+  // === LocalStorage ===
+  private savePionsToStorage() {
+    localStorage.setItem('pionsState', JSON.stringify(this.pions));
   }
 
-  private restorePionFromStorage() {
-    const saved = localStorage.getItem('pionState');
+  private restorePionsFromStorage() {
+    const saved = localStorage.getItem('pionsState');
     if (saved) {
-      const state = JSON.parse(saved);
-      if (state.color === this.pionColor) {
-        this.pionIndex = state.index;
-        this.pionOnBoard = state.onBoard;
-        this.currentPionCase = this.listeCasesSequence[this.pionIndex];
-      }
+      this.pions = JSON.parse(saved);
     }
   }
 
-  restartPion() {
-    this.pionOnBoard = false;
-    this.pionIndex = 0;
-    this.currentPionCase = undefined;
-
-    // Remove the saved state from localStorage
-    this.savePionToStorage();
+  restartPions() {
+    for (const key of Object.keys(this.pions)) {
+      this.pions[key].index = 0;
+      this.pions[key].onBoard = false;
+    }
+    this.savePionsToStorage();
   }
 
-  private genererListeSequence(cases: CasePlateau[]): CasePlateau[] {
-    const seq: CasePlateau[] = [];
-    const add = (color: string, positions: number[]) => {
-      seq.push(
+  // === Board generation / Sequences ===
+  private genererListeSequence(cases: CasePlateau[]): { [key: string]: CasePlateau[] } {
+    const sequences: { [key: string]: CasePlateau[] } = { VERT: [], ROUGE: [] };
+    const add = (color: string, positions: number[], targetColor?: string) => {
+      const c = targetColor || color;
+      sequences[color].push(
         ...cases
-          .filter(c => c.couleur === color && positions.includes(c.position))
+          .filter(cas => cas.couleur === c && positions.includes(cas.position))
           .sort((a, b) => positions.indexOf(a.position) - positions.indexOf(b.position))
       );
     };
 
-    add('VERT', Array.from({ length: 13 }, (_, i) => i + 1));
-    add('JAUNE', [14]);
-    add('JAUNE', Array.from({ length: 13 }, (_, i) => i + 1));
-    add('BLEU', [14]);
-    add('BLEU', Array.from({ length: 13 }, (_, i) => i + 1));
-    add('ROUGE', [14]);
-    add('ROUGE', Array.from({ length: 13 }, (_, i) => i + 1));
-    add('VERT', [14]);
+    const greenLadder = [16, 17, 18, 19, 20, 21];
+    const redLadder = [16, 17, 18, 19, 20, 21];
 
-    const home = [16, 17, 18, 19, 20, 21];
-    add('VERT', home);
-    add('JAUNE', home);
-    add('BLEU', home);
-    add('ROUGE', home);
+    // --- Green Pion Path ---
+    add('VERT', Array.from({length:13}, (_,i)=>i+1));         // green 1-13
+    add('VERT', [14], 'JAUNE');                               // yellow 14
+    add('VERT', Array.from({length:13}, (_,i)=>i+1), 'JAUNE'); // yellow 1-13
+    add('VERT', [14], 'BLEU');                                // blue 14
+    add('VERT', Array.from({length:13}, (_,i)=>i+1), 'BLEU');  // blue 1-13
+    add('VERT', [14], 'ROUGE');                               // red 14
+    add('VERT', Array.from({length:13}, (_,i)=>i+1), 'ROUGE'); // red 1-13
+    add('VERT', [14], 'VERT');                                // green 14
+    add('VERT', greenLadder);                                 // green ladder
 
-    return seq;
+    // --- Red Pion Path ---
+    add('ROUGE', Array.from({length:13}, (_,i)=>i+1));         // red 1-13
+    add('ROUGE', [14], 'VERT');                                 // green 14
+    add('ROUGE', Array.from({length:13}, (_,i)=>i+1), 'VERT'); // green 1-13
+    add('ROUGE', [14], 'JAUNE');                                // yellow 14
+    add('ROUGE', Array.from({length:13}, (_,i)=>i+1), 'JAUNE'); // yellow 1-13
+    add('ROUGE', [14], 'BLEU');                                 // blue 14
+    add('ROUGE', Array.from({length:13}, (_,i)=>i+1), 'BLEU'); // blue 1-13
+    add('ROUGE', [14], 'ROUGE');                                // red 14
+    add('ROUGE', redLadder);                                    // red ladder
+
+    return sequences;
   }
 
   generateGrille(cases: CasePlateau[]): CasePlateau[][] {
@@ -182,66 +164,56 @@ export class PlateauComponent implements OnInit {
     const find = (couleur: string, position: number) =>
       cases.find(c => c.couleur === couleur && c.position === position)!;
 
-    lignes.push([
-      ...Array(6).fill(find('JAUNE', 15)),
-      find('JAUNE', 13),
-      find('BLEU', 14),
-      find('BLEU', 1),
-      ...Array(6).fill(find('BLEU', 15))
-    ]);
-
-    let jaunePosition = 12;
-    let bleuPosition1 = 16;
-    let bleuPosition2 = 2;
-    for (let i = 1; i <= 5; i++) {
+    // Ligne 1 à 6
+    for (let i = 0; i < 6; i++) {
       lignes.push([
         ...Array(6).fill(find('JAUNE', 15)),
-        find('JAUNE', jaunePosition),
-        find('BLEU', bleuPosition1),
-        find('BLEU', bleuPosition2),
+        find('JAUNE', 13 - i),
+        find('BLEU', 14 + i),
+        find('BLEU', i + 1),
         ...Array(6).fill(find('BLEU', 15))
       ]);
-      jaunePosition--;
-      bleuPosition1++;
-      bleuPosition2++;
     }
 
+    // Ligne 7
     lignes.push([
       ...Array.from({ length: 7 }, (_, i) => find('JAUNE', i + 1)),
       find('BLEU', 21),
       ...Array.from({ length: 7 }, (_, i) => find('BLEU', i + 7))
     ]);
 
+    // Ligne 8
     lignes.push([
       find('JAUNE', 14),
       ...Array.from({ length: 6 }, (_, i) => find('JAUNE', i + 16)),
       find('BLEU', 22),
       ...Array.from({ length: 6 }, (_, i) => find('ROUGE', 21 - i)),
-      find('ROUGE', 14),
+      find('ROUGE', 14)
     ]);
 
+    // Ligne 9
     lignes.push([
       ...Array.from({ length: 7 }, (_, i) => find('VERT', 13 - i)),
       find('VERT', 21),
       ...Array.from({ length: 7 }, (_, i) => find('ROUGE', 7 - i))
     ]);
 
-    let vertPosition1 = 6;
-    let vertPosition2 = 20;
-    let rougePosition = 8;
-    for (let i = 1; i <= 5; i++) {
+    // Ligne 10 à 15
+    let vertPos1 = 6, vertPos2 = 20, rougePos = 8;
+    for (let i = 0; i < 6; i++) {
       lignes.push([
         ...Array(6).fill(find('VERT', 15)),
-        find('VERT', vertPosition1),
-        find('VERT', vertPosition2),
-        find('ROUGE', rougePosition),
+        find('VERT', vertPos1),
+        find('VERT', vertPos2),
+        find('ROUGE', rougePos),
         ...Array(6).fill(find('ROUGE', 15))
       ]);
-      vertPosition1--;
-      vertPosition2--;
-      rougePosition++;
+      vertPos1--;
+      vertPos2--;
+      rougePos++;
     }
 
+    // Ligne 16
     lignes.push([
       ...Array(6).fill(find('VERT', 15)),
       find('VERT', 1),

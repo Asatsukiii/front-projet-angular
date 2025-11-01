@@ -34,17 +34,10 @@
     gap: 10px;
     margin-top: 40px;
 
-    button {
-      background-color: #222;
-      color: white;
-      padding: 8px 14px;
-      font-size: 1rem;
-      border-radius: 6px;
-      cursor: pointer;
-      transition: background 0.2s;
-
-      &:hover:not(:disabled) { background-color: #444; }
-      &:disabled { opacity: 0.6; cursor: not-allowed; }
+    .dice-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
 
     .dice {
@@ -58,10 +51,38 @@
       border-radius: 8px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.2);
       transition: transform 0.1s ease-in-out;
+
+      &.rolling {
+        animation: dice-roll 0.8s linear infinite;
+      }
     }
 
-    .rolling {
-      animation: dice-roll 0.8s linear infinite;
+    .active-pion-indicator {
+      width: 60px;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      color: #fff;
+      border-radius: 6px;
+      text-transform: uppercase;
+
+      &.vert { background-color: #28a745; }
+      &.rouge { background-color: #c0392b; }
+    }
+
+    button {
+      background-color: #222;
+      color: white;
+      padding: 8px 14px;
+      font-size: 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.2s;
+
+      &:hover:not(:disabled) { background-color: #444; }
+      &:disabled { opacity: 0.6; cursor: not-allowed; }
     }
   }
 
