@@ -33,8 +33,8 @@ export class PlateauComponent implements OnInit {
         this.casesAffichees = this.lignes.flat();
         this.listeCasesSequence = this.genererListeSequence(data);
 
-        this.pionOnBoard = false;
-        this.currentPionCase = undefined;
+        // ✅ Restore pion state from localStorage
+        this.restorePionFromStorage();
       },
       error: (err) => console.error('Erreur chargement plateau:', err)
     });
@@ -44,21 +44,19 @@ export class PlateauComponent implements OnInit {
     if (this.isRolling) return;
     this.isRolling = true;
 
-
     const value = Math.floor(Math.random() * 6) + 1;
     this.diceValue = value;
-    console.log('Valeur du dé:', this.diceValue);
-    console.log('Case actuelle:', this.currentPionCase);
 
     setTimeout(() => {
       this.movePion(value);
       this.isRolling = false;
-      console.log('Case après déplacement:', this.currentPionCase);
+
+      // ✅ Save pion state after moving
+      this.savePionToStorage();
     }, 1000);
   }
 
   movePion(steps: number) {
-    // Si le pion est encore en écurie
     if (!this.pionOnBoard) {
       if (steps === 6) {
         const startIndex = this.listeCasesSequence.findIndex(
@@ -68,8 +66,9 @@ export class PlateauComponent implements OnInit {
           this.pionIndex = startIndex;
           this.currentPionCase = this.listeCasesSequence[this.pionIndex];
           this.pionOnBoard = true;
-        } else {
-          console.warn('Start index non trouvé pour', this.pionColor);
+
+          // ✅ Save pion state when first placed on board
+          this.savePionToStorage();
         }
       }
       return;
@@ -80,12 +79,10 @@ export class PlateauComponent implements OnInit {
     const currentPos = this.currentPionCase.position;
     const currentColor = this.currentPionCase.couleur;
 
-
+    // Handle "échelle" logic
     if (currentColor === this.pionColor && currentPos >= 14 && currentPos <= 21) {
-      console.log('On est dans l\'échelle (ou sur l\'entrée) :', this.currentPionCase);
       const requiredRoll = currentPos === 14 ? 1 : (currentPos - 14);
       if (steps === requiredRoll) {
-
         const targetPos = currentPos === 14 ? 16 : currentPos + 1;
         const nextIndex = this.listeCasesSequence.findIndex(
           c => c.couleur === this.pionColor && c.position === targetPos
@@ -93,41 +90,63 @@ export class PlateauComponent implements OnInit {
         if (nextIndex >= 0) {
           this.pionIndex = nextIndex;
           this.currentPionCase = this.listeCasesSequence[this.pionIndex];
-        } else {
-          console.warn('Case d\'échelle cible non trouvée', targetPos, this.pionColor);
+
+          // ✅ Save pion state after moving on the ladder
+          this.savePionToStorage();
         }
-      } else {
-        console.log(`Roll ${steps} ne correspond pas à ${requiredRoll} attendu pour avancer sur l'échelle.`);
       }
       return;
     }
 
-
     let newIndex = this.pionIndex;
-
     for (let i = 0; i < steps; i++) {
       let nextIndex = newIndex + 1;
       if (nextIndex >= this.listeCasesSequence.length) nextIndex = 0;
 
       const nextCase = this.listeCasesSequence[nextIndex];
 
-
       if (nextCase.couleur === this.pionColor && nextCase.position === 14) {
         newIndex = nextIndex;
-        console.log('On atteint la case 14 (entrée de l\'échelle) - on s\'arrête dessus.');
         break;
       }
-
 
       newIndex = nextIndex;
     }
 
     this.pionIndex = newIndex;
     this.currentPionCase = this.listeCasesSequence[this.pionIndex];
-    console.log('Nouvelle case après déplacement:', this.currentPionCase);
+
+    // ✅ Save pion state after each move
+    this.savePionToStorage();
   }
 
+  // ==========================
+  // ✅ LocalStorage persistence methods
+  // ==========================
+  private savePionToStorage() {
+    const pionState = {
+      color: this.pionColor,
+      index: this.pionIndex,
+      onBoard: this.pionOnBoard
+    };
+    localStorage.setItem('pionState', JSON.stringify(pionState));
+  }
 
+  private restorePionFromStorage() {
+    const saved = localStorage.getItem('pionState');
+    if (saved) {
+      const state = JSON.parse(saved);
+      if (state.color === this.pionColor) {
+        this.pionIndex = state.index;
+        this.pionOnBoard = state.onBoard;
+        this.currentPionCase = this.listeCasesSequence[this.pionIndex];
+      }
+    }
+  }
+
+  // ==========================
+  // Board generation methods
+  // ==========================
   private genererListeSequence(cases: CasePlateau[]): CasePlateau[] {
     const seq: CasePlateau[] = [];
     const add = (color: string, positions: number[]) => {
