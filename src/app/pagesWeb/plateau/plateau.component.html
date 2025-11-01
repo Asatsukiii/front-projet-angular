@@ -28,10 +28,14 @@
           />
         </div>
       </div>
-    </div>
-  </div>
 
-  <div class="rules-panel" [class.open]="showRules">
+      <!-- ✅ Restart button -->
+      <div class="restart-container">
+        <button (click)="restartPion()">Restart Pion</button>
+      </div>
+    </div>
+
+    <div class="rules-panel" [class.open]="showRules">
     <div class="rules-header">
       <h2>Règles du jeu</h2>
       <button class="close-btn" (click)="toggleRules()">✕</button>

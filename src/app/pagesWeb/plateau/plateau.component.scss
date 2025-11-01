@@ -206,3 +206,40 @@
   75% { transform: rotate(270deg); }
   100% { transform: rotate(360deg); }
 }
+
+.restart-container {
+  margin-top: 30px;          // Space below the board
+  display: flex;
+  justify-content: center;   // Center the button
+
+  button {
+    padding: 10px 20px;
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: 12px;
+    border: none;
+    background: linear-gradient(135deg, #2563eb, #1d4ed8); // gradient blue
+    color: #fff;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    transition: transform 0.2s, box-shadow 0.2s, background 0.3s;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 14px rgba(0, 0, 0, 0.25);
+      background: linear-gradient(135deg, #1d4ed8, #2563eb);
+    }
+
+    &:active {
+      transform: translateY(1px);
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    &:disabled {
+      background: #9ca3af;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+  }
+}
+

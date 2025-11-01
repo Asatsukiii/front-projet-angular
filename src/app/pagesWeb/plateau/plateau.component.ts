@@ -116,13 +116,9 @@ export class PlateauComponent implements OnInit {
     this.pionIndex = newIndex;
     this.currentPionCase = this.listeCasesSequence[this.pionIndex];
 
-    // ✅ Save pion state after each move
     this.savePionToStorage();
   }
 
-  // ==========================
-  // ✅ LocalStorage persistence methods
-  // ==========================
   private savePionToStorage() {
     const pionState = {
       color: this.pionColor,
@@ -144,9 +140,15 @@ export class PlateauComponent implements OnInit {
     }
   }
 
-  // ==========================
-  // Board generation methods
-  // ==========================
+  restartPion() {
+    this.pionOnBoard = false;
+    this.pionIndex = 0;
+    this.currentPionCase = undefined;
+
+    // Remove the saved state from localStorage
+    this.savePionToStorage();
+  }
+
   private genererListeSequence(cases: CasePlateau[]): CasePlateau[] {
     const seq: CasePlateau[] = [];
     const add = (color: string, positions: number[]) => {
