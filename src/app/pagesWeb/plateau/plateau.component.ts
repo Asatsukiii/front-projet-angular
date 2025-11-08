@@ -121,7 +121,13 @@ export class PlateauComponent implements OnInit {
       if (steps === 6) {
         pion.etatPion = 'EN_JEU';
         const caseDepart = sequence.find(c => c.position === 1 && c.couleur === couleur);
-        if (caseDepart) pion.casePlateau = caseDepart.id_case;
+        console.log("caseDepart trouvé:",caseDepart)
+        if (caseDepart) {
+          pion.casePlateau = caseDepart.idCase;
+          console.log('Pion sorti de l\'écurie:', pion);
+        } else {
+          console.error('Pas de case de départ trouvée pour couleur', couleur, sequence);
+        }
       }
       return;
     }
@@ -129,7 +135,7 @@ export class PlateauComponent implements OnInit {
     if (pion.etatPion === 'ARRIVE') return;
 
     // Index actuel
-    let idx = sequence.findIndex(c => c.id_case === pion.casePlateau);
+    let idx = sequence.findIndex(c => c.idCase === pion.casePlateau);
     if (idx < 0) return;
 
     const currentCase = sequence[idx];
@@ -140,18 +146,18 @@ export class PlateauComponent implements OnInit {
         const nextIndex = sequence.findIndex(c => c.couleur === couleur && c.position === 16);
         if (nextIndex >= 0) idx = nextIndex;
       }
-      pion.casePlateau = sequence[idx].id_case;
+      pion.casePlateau = sequence[idx].idCase;
       return;
     }
 
     if (currentCase.position >= 16 && currentCase.position <= 21 && currentCase.couleur === couleur) {
       const nextPosition = currentCase.position + 1;
-      const requiredRoll = nextPosition - 15; // 16->1, 17->2, ..., 21->6
+      const requiredRoll = nextPosition - 15;
       if (steps === requiredRoll) {
         const nextIndex = sequence.findIndex(c => c.couleur === couleur && c.position === nextPosition);
         if (nextIndex >= 0) idx = nextIndex;
       }
-      pion.casePlateau = sequence[idx].id_case;
+      pion.casePlateau = sequence[idx].idCase;
       return;
     }
 
@@ -168,7 +174,7 @@ export class PlateauComponent implements OnInit {
       }
     }
 
-    pion.casePlateau = sequence[idx].id_case;
+    pion.casePlateau = sequence[idx].idCase;
   }
 
   /** ==================== Séquences et plateau ==================== */
@@ -224,15 +230,49 @@ export class PlateauComponent implements OnInit {
     return lignes;
   }
 
+
   /** ==================== LocalStorage ==================== */
 
+  /**
+   * Sauvegarde les pions dans le localStorage.
+   * On ne garde que les informations essentielles : id, casePlateau, etatPion, couleur, joueurPartieId
+   */
   private savePionsToStorage() {
-    localStorage.setItem('pions', JSON.stringify(this.pions));
+    const toSave = this.pions.map(p => ({
+      idPion: p.idPion,
+      casePlateau: p.casePlateau,
+      etatPion: p.etatPion,
+      couleur: p.joueurPartie?.couleur, // stocke la couleur directement
+      joueurPartieId: p.joueurPartie?.id
+    }));
+    localStorage.setItem('pions', JSON.stringify(toSave));
   }
 
+  /**
+   * Restaure les pions depuis le localStorage.
+   * Reconstruit la structure minimale de joueurPartie pour que getPionImgForCase fonctionne.
+   */
   private restorePionsFromStorage() {
     const saved = localStorage.getItem('pions');
-    if (saved) this.pions = JSON.parse(saved);
+    if (!saved) return;
+
+    const parsed: Array<{
+      idPion?: number;
+      casePlateau?: number | null;
+      etatPion: EtatPion;
+      couleur?: 'ROUGE' | 'BLEU' | 'VERT' | 'JAUNE';
+      joueurPartieId?: number;
+    }> = JSON.parse(saved);
+
+    this.pions = parsed.map(p => ({
+      idPion: p.idPion,
+      casePlateau: p.casePlateau,
+      etatPion: p.etatPion,
+      idJoueurPartie: p.joueurPartieId!,
+      joueurPartie: p.couleur
+        ? { id: p.joueurPartieId!, couleur: p.couleur }
+        : undefined
+    }));
   }
 
   restartPions() {
@@ -250,24 +290,20 @@ export class PlateauComponent implements OnInit {
     const pion = this.pions.find(p => p.joueurPartie?.couleur === color);
     if (!pion || pion.etatPion === 'ECURIE') return undefined;
 
-    return this.listeCasesSequence[color]?.find(c => c.id_case === pion.casePlateau);
+    return this.listeCasesSequence[color]?.find(c => c.idCase === pion.casePlateau);
   }
-  getPionImgForCase(c: CasePlateau): { src: string; alt: string }[] {
-    if (!this.pions || !this.colors) return [];
 
-    return this.colors
-      .map(color => {
-        const pion = this.pions.find(p => p.joueurPartie?.couleur === color);
-        if (pion && pion.etatPion !== 'ECURIE' && pion.casePlateau === c.id_case) {
-          return {
-            src: `../../assets/Pion_${color.toLowerCase()}.png`,
-            alt: `pion ${color}`
-          };
-        }
-        return null;
-      })
-      .filter(p => p !== null) as { src: string; alt: string }[];
+  getPionImgForCase(c: CasePlateau): { src: string; alt: string }[] {
+    if (!this.pions|| c.typeCase=="ECURIE") return [];
+
+    return this.pions
+      .filter(p => p.casePlateau === c.idCase && p.etatPion !== 'ECURIE')
+      .map(p => ({
+        src: `../../assets/Pion_${p.joueurPartie?.couleur.toLowerCase()}.png`,
+        alt: `pion ${p.joueurPartie?.couleur}`
+      }));
   }
+
 
 
 
