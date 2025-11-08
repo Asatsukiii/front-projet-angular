@@ -97,6 +97,7 @@ export class PlateauComponent implements OnInit {
 
     setTimeout(() => {
       const pion = this.pions.find(p => p.joueurPartie?.couleur === this.pionColor);
+      console.log("valeur dé pour:",pion?.joueurPartie?.couleur,"=",this.diceValue);
       if (pion) this.movePion(pion, this.diceValue);
 
       this.isRolling = false;
@@ -132,8 +133,6 @@ export class PlateauComponent implements OnInit {
       return;
     }
 
-    if (pion.etatPion === 'ARRIVE') return;
-
     // Index actuel
     let idx = sequence.findIndex(c => c.idCase === pion.casePlateau);
     if (idx < 0) return;
@@ -142,6 +141,7 @@ export class PlateauComponent implements OnInit {
 
     // Échelle
     if (currentCase.position === 14 && currentCase.couleur === couleur) {
+      console.log("le pion ",pion.joueurPartie?.couleur, " est sur l arrivee");
       if (steps === 1) {
         const nextIndex = sequence.findIndex(c => c.couleur === couleur && c.position === 16);
         if (nextIndex >= 0) idx = nextIndex;
@@ -151,6 +151,7 @@ export class PlateauComponent implements OnInit {
     }
 
     if (currentCase.position >= 16 && currentCase.position <= 21 && currentCase.couleur === couleur) {
+      console.log("le pion ",pion.joueurPartie?.couleur, " est sur l echelle. position",pion.CasePlateau?.position);
       const nextPosition = currentCase.position + 1;
       const requiredRoll = nextPosition - 15;
       if (steps === requiredRoll) {
@@ -174,13 +175,17 @@ export class PlateauComponent implements OnInit {
       }
     }
 
+    pion.CasePlateau = sequence[idx];
     pion.casePlateau = sequence[idx].idCase;
+    console.log("le pion ",pion.joueurPartie?.couleur, " est maintenant sur la case:",pion.CasePlateau?.position, " de couleur:", pion.CasePlateau?.couleur);
   }
 
   /** ==================== Séquences et plateau ==================== */
 
   private genererListeSequence(cases: CasePlateau[]): { [key: string]: CasePlateau[] } {
     const sequences: { [key: string]: CasePlateau[] } = { VERT: [], ROUGE: [], BLEU: [], JAUNE: [] };
+    const home = [16, 17, 18, 19, 20, 21];
+
 
     const add = (color: string, positions: number[], targetColor?: string) => {
       const c = targetColor || color;
@@ -191,16 +196,52 @@ export class PlateauComponent implements OnInit {
       );
     };
 
-    const home = [16, 17, 18, 19, 20, 21];
 
-    ['VERT', 'ROUGE', 'BLEU', 'JAUNE'].forEach(color => {
-      add(color, Array.from({ length: 13 }, (_, i) => i + 1));
-      add(color, [14], color); // ARRIVEE
-      add(color, home); // ECHELLE
-    });
+    add('ROUGE', Array.from({ length: 13 }, (_, i) => i + 1), 'ROUGE');
+    add('ROUGE', [14], 'VERT');
+    add('ROUGE', Array.from({ length: 13 }, (_, i) => i + 1), 'VERT');
+    add('ROUGE', [14], 'JAUNE');
+    add('ROUGE', Array.from({ length: 13 }, (_, i) => i + 1), 'JAUNE');
+    add('ROUGE', [14], 'BLEU');
+    add('ROUGE', Array.from({ length: 13 }, (_, i) => i + 1), 'BLEU');
+    add('ROUGE', [14], 'ROUGE');
+    add('ROUGE', home, 'ROUGE');
+
+
+    add('VERT', Array.from({ length: 13 }, (_, i) => i + 1), 'VERT');
+    add('VERT', [14], 'JAUNE');
+    add('VERT', Array.from({ length: 13 }, (_, i) => i + 1), 'JAUNE');
+    add('VERT', [14], 'BLEU');
+    add('VERT', Array.from({ length: 13 }, (_, i) => i + 1), 'BLEU');
+    add('VERT', [14], 'ROUGE');
+    add('VERT', Array.from({ length: 13 }, (_, i) => i + 1), 'ROUGE');
+    add('VERT', [14], 'VERT');
+    add('VERT', home, 'VERT');
+
+    add('JAUNE', Array.from({ length: 13 }, (_, i) => i + 1), 'JAUNE');
+    add('JAUNE', [14], 'BLEU');
+    add('JAUNE', Array.from({ length: 13 }, (_, i) => i + 1), 'BLEU');
+    add('JAUNE', [14], 'ROUGE');
+    add('JAUNE', Array.from({ length: 13 }, (_, i) => i + 1), 'ROUGE');
+    add('JAUNE', [14], 'VERT');
+    add('JAUNE', Array.from({ length: 13 }, (_, i) => i + 1), 'VERT');
+    add('JAUNE', [14], 'JAUNE');
+    add('JAUNE', home, 'JAUNE');
+
+    add('BLEU', Array.from({ length: 13 }, (_, i) => i + 1), 'BLEU');
+    add('BLEU', [14], 'ROUGE');
+    add('BLEU', Array.from({ length: 13 }, (_, i) => i + 1), 'ROUGE');
+    add('BLEU', [14], 'VERT');
+    add('BLEU', Array.from({ length: 13 }, (_, i) => i + 1), 'VERT');
+    add('BLEU', [14], 'JAUNE');
+    add('BLEU', Array.from({ length: 13 }, (_, i) => i + 1), 'JAUNE');
+    add('BLEU', [14], 'BLEU');
+    add('BLEU', home, 'BLEU');
 
     return sequences;
   }
+
+
 
   generateGrille(cases: CasePlateau[]): CasePlateau[][] {
     const lignes: CasePlateau[][] = [];
