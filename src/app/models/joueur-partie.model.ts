@@ -6,13 +6,11 @@ export type Couleur = 'ROUGE' | 'BLEU' | 'VERT' | 'JAUNE';
 
 export interface JoueurPartie {
   id: number;
-  id_joueur_partie: number;
-  partieId: number;
   joueurId: number;
+  partieId: number;
   couleur: Couleur;
   classement?: number | null;
 
-  // Relations possibles
   partie?: Partie;
   joueur?: Joueur;
   pions?: Pion[];

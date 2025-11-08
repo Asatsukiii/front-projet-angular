@@ -1,13 +1,21 @@
 <div class="plateau-container">
   <button class="help-btn" *ngIf="!showRules" (click)="toggleRules()">?</button>
+  <div *ngIf="!partieCreee">
+    <div *ngFor="let joueur of joueursInit; let i = index">
+      <input [(ngModel)]="joueur.pseudo" placeholder="Pseudo joueur {{i+1}}" />
+      <select [(ngModel)]="joueur.couleur">
+        <option value="ROUGE">ROUGE</option>
+        <option value="BLEU">BLEU</option>
+        <option value="VERT">VERT</option>
+        <option value="JAUNE">JAUNE</option>
+      </select>
+    </div>
+    <button (click)="startPartie()">Commencer Partie</button>
+  </div>
 
-  <div class="board-wrapper">
+  <div *ngIf="partieCreee" class="game-container">
 
-<!--    <div class="pion-status">-->
-<!--      <div class="status green">{{ getPionStatus('VERT') }}</div>-->
-<!--      <div class="status red">{{ getPionStatus('ROUGE') }}</div>-->
-<!--    </div>-->
-    <!-- Dice -->
+    <!-- Dé et pion actif -->
     <div class="dice-container">
       <div class="dice-wrapper">
         <div class="dice" [class.rolling]="isRolling">
@@ -20,40 +28,30 @@
       <button (click)="rollDice()" [disabled]="isRolling">Lancer le dé</button>
     </div>
 
+    <!-- Plateau -->
     <div class="game-board">
       <div class="plateau">
-        <div
-          *ngFor="let c of casesAffichees; index as i"
-          class="case"
-          [ngClass]="[c.couleur.toLowerCase(), c.typeCase ? c.typeCase.toLowerCase() : '', i === 112 ? 'centre' : '']"
-          [title]="c.couleur + ' ' + c.position"
-        >
+        <div *ngFor="let c of casesAffichees; let i = index"
+             class="case"
+             [ngClass]="[c.couleur.toLowerCase(), c.typeCase ? c.typeCase.toLowerCase() : '', i === 112 ? 'centre' : '']"
+             [title]="c.couleur + ' ' + c.position">
           {{ c.typeCase ? c.position : '' }}
 
-          <!-- Pions -->
-          <img
-            *ngIf="pions['VERT'].onBoard && getPionCase('VERT') === c"
-            src="../../assets/Pion_vert.png"
-            class="pion"
-            alt="pion vert"
-          />
-          <img
-            *ngIf="pions['ROUGE'].onBoard && getPionCase('ROUGE') === c"
-            src="../../assets/Pion_rouge.png"
-            class="pion"
-            alt="pion rouge"
-          />
+          <ng-container *ngFor="let img of getPionImgForCase(c)">
+            <img [src]="img.src" [alt]="img.alt" class="pion" />
+          </ng-container>
         </div>
+
       </div>
 
-      <!-- Restart Button -->
+      <!-- Bouton restart -->
       <div class="restart-container">
         <button (click)="restartPions()">Restart Pions</button>
       </div>
     </div>
   </div>
 
-  <!-- Rules Panel -->
+  <!-- Panel règles -->
   <div class="rules-panel" [class.open]="showRules">
     <div class="rules-header">
       <h2>Règles du jeu</h2>

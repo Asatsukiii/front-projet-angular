@@ -1,10 +1,15 @@
 import { Component, OnInit } from '@angular/core';
 import { CasePlateauService } from '../../services/case-plateau.service';
+import { PartieManagerService } from '../../services/partie-manager.service';
 import { CasePlateau } from '../../models/case-plateau.model';
+import { JoueurPartie } from "../../models/joueur-partie.model";
+import { Partie } from "../../models/partie.model";
+import { Pion, EtatPion } from "../../models/pion.model";
 
-interface PionState {
-  index: number;
-  onBoard: boolean;
+interface JoueurInit {
+  pseudo: string;
+  couleur: 'ROUGE' | 'BLEU' | 'VERT' | 'JAUNE';
+  id?: number;
 }
 
 @Component({
@@ -17,20 +22,29 @@ export class PlateauComponent implements OnInit {
   lignes: CasePlateau[][] = [];
   casesAffichees: CasePlateau[] = [];
 
-  // Separate sequences for green and red
-  listeCasesSequence: { [key: string]: CasePlateau[] } = { VERT: [], ROUGE: [] };
+  listeCasesSequence: { [key: string]: CasePlateau[] } = {};
+  pions: Pion[] = [];
+  joueursInit: JoueurInit[] = [
+    { pseudo: '', couleur: 'ROUGE' },
+    { pseudo: '', couleur: 'BLEU' },
+    { pseudo: '', couleur: 'VERT' },
+    { pseudo: '', couleur: 'JAUNE' }
+  ];
 
-  pions: { [key: string]: PionState } = {
-    VERT: { index: 0, onBoard: false },
-    ROUGE: { index: 0, onBoard: false }
-  };
-
-  pionColor: 'VERT' | 'ROUGE' = 'VERT'; // currently active pion
+  partieCreee = false;
+  pionColor: 'VERT' | 'ROUGE' | 'BLEU' | 'JAUNE' = 'VERT';
+  colors: Array<'VERT' | 'ROUGE' | 'BLEU' | 'JAUNE'> = ['VERT', 'ROUGE', 'BLEU', 'JAUNE'];
   diceValue = 0;
   isRolling = false;
+
+  joueursPartie: JoueurPartie[] = [];
+  partie: Partie | null = null;
   showRules = false;
 
-  constructor(private caseService: CasePlateauService) {}
+  constructor(
+    private caseService: CasePlateauService,
+    private PartieManagerService: PartieManagerService
+  ) {}
 
   ngOnInit(): void {
     this.caseService.getAll().subscribe({
@@ -45,14 +59,46 @@ export class PlateauComponent implements OnInit {
     });
   }
 
+  /** ==================== Partie / Joueurs / Pions ==================== */
+
+  startPartie() {
+    const pseudos = this.joueursInit.map(j => j.pseudo.trim());
+    const couleurs = this.joueursInit.map(j => j.couleur);
+
+    if (pseudos.some(p => !p)) {
+      alert('Tous les pseudos doivent être remplis !');
+      return;
+    }
+
+    // Crée la partie complète
+    this.PartieManagerService.createPartieComplete(pseudos, couleurs)
+      .subscribe({
+        next: (result) => {
+          console.log('Partie complète créée', result);
+          this.partie = result.partie;
+          this.joueursPartie = result.joueursPartie;
+          this.pions = result.pions;
+          this.partieCreee = true;
+          this.savePionsToStorage();
+        },
+        error: (err) => {
+          console.error('Erreur création partie', err);
+          alert('Impossible de créer la partie');
+        }
+      });
+  }
+
+  /** ==================== Déplacement des pions ==================== */
+
   rollDice() {
     if (this.isRolling) return;
     this.isRolling = true;
-
     this.diceValue = Math.floor(Math.random() * 6) + 1;
 
     setTimeout(() => {
-      this.movePion(this.pionColor, this.diceValue);
+      const pion = this.pions.find(p => p.joueurPartie?.couleur === this.pionColor);
+      if (pion) this.movePion(pion, this.diceValue);
+
       this.isRolling = false;
       this.savePionsToStorage();
       this.switchPion();
@@ -60,107 +106,76 @@ export class PlateauComponent implements OnInit {
   }
 
   switchPion() {
-    this.pionColor = this.pionColor === 'VERT' ? 'ROUGE' : 'VERT';
+    const colors: ('VERT' | 'ROUGE' | 'BLEU' | 'JAUNE')[] = ['VERT', 'ROUGE', 'BLEU', 'JAUNE'];
+    const currentIndex = colors.indexOf(this.pionColor);
+    this.pionColor = colors[(currentIndex + 1) % 4];
   }
 
-  movePion(color: 'VERT' | 'ROUGE', steps: number) {
-    const pion = this.pions[color];
-    const sequence = this.listeCasesSequence[color];
+  movePion(pion: Pion, steps: number) {
+    const couleur = pion.joueurPartie!.couleur;
+    const sequence = this.listeCasesSequence[couleur];
+    if (!sequence || sequence.length === 0) return;
 
-    if (!pion.onBoard) {
+    // Sortie de l'écurie
+    if (pion.etatPion === 'ECURIE') {
       if (steps === 6) {
-        pion.index = 0;
-        pion.onBoard = true;
+        pion.etatPion = 'EN_JEU';
+        const caseDepart = sequence.find(c => c.position === 1 && c.couleur === couleur);
+        if (caseDepart) pion.casePlateau = caseDepart.id_case;
       }
       return;
     }
 
-    let idx = pion.index;
+    if (pion.etatPion === 'ARRIVE') return;
+
+    // Index actuel
+    let idx = sequence.findIndex(c => c.id_case === pion.casePlateau);
+    if (idx < 0) return;
+
     const currentCase = sequence[idx];
 
-    // Ladder logic
-    if (currentCase.position === 14 && currentCase.couleur === color) {
-      // Moving onto ladder first step (16)
+    // Échelle
+    if (currentCase.position === 14 && currentCase.couleur === couleur) {
       if (steps === 1) {
-        const nextIndex = sequence.findIndex(
-          c => c.couleur === color && c.position === 16
-        );
+        const nextIndex = sequence.findIndex(c => c.couleur === couleur && c.position === 16);
         if (nextIndex >= 0) idx = nextIndex;
       }
-      pion.index = idx;
+      pion.casePlateau = sequence[idx].id_case;
       return;
     }
 
-    // If already on ladder
-    if (currentCase.position >= 16 && currentCase.position <= 20 && currentCase.couleur === color) {
+    if (currentCase.position >= 16 && currentCase.position <= 21 && currentCase.couleur === couleur) {
       const nextPosition = currentCase.position + 1;
-      const requiredRoll = nextPosition - 15; // 16->1, 17->2, ..., 20->6
+      const requiredRoll = nextPosition - 15; // 16->1, 17->2, ..., 21->6
       if (steps === requiredRoll) {
-        const nextIndex = sequence.findIndex(
-          c => c.couleur === color && c.position === nextPosition
-        );
+        const nextIndex = sequence.findIndex(c => c.couleur === couleur && c.position === nextPosition);
         if (nextIndex >= 0) idx = nextIndex;
       }
-      pion.index = idx;
+      pion.casePlateau = sequence[idx].id_case;
       return;
     }
 
-    // Normal movement along sequence
+    // Avancée normale
     for (let i = 0; i < steps; i++) {
       if (idx < sequence.length - 1) {
         const nextCase = sequence[idx + 1];
-
-        // Stop at the pion's own 14 no matter what
-        if (nextCase.position === 14 && nextCase.couleur === color) {
-          idx++; // move to 14
-          break; // stop moving, even if steps remain
+        if (nextCase.position === 14 && nextCase.couleur === couleur) {
+          idx++;
+          pion.etatPion = 'ARRIVE';
+          break;
         }
-
         idx++;
       }
     }
 
-    pion.index = idx;
+    pion.casePlateau = sequence[idx].id_case;
   }
 
-
-// Helper to get the CasePlateau object for a pion
-  getPionCase(color: 'VERT' | 'ROUGE'): CasePlateau | undefined {
-    const pion = this.pions[color];
-    if (!pion.onBoard) return undefined;
-    const sequence = this.listeCasesSequence[color];
-    return sequence[pion.index];
-  }
-
-  getPionStatus(color: 'VERT' | 'ROUGE'): string {
-    const pion = this.pions[color];
-    if (!pion.onBoard) return `${color}: Écurie`;
-    const currentCase = this.listeCasesSequence[color][pion.index];
-    if (!currentCase) return `${color}: ?`;
-    if (currentCase.position >= 16) return `${color}: Ladder ${currentCase.position}`;
-    return `${color}: ${currentCase.couleur} ${currentCase.position}`;
-  }
-
-  // === LocalStorage ===
-  private savePionsToStorage() {
-    localStorage.setItem('pionsState', JSON.stringify(this.pions));
-  }
-
-  private restorePionsFromStorage() {
-    const saved = localStorage.getItem('pionsState');
-    if (saved) this.pions = JSON.parse(saved);
-  }
-
-  restartPions() {
-    for (const key of Object.keys(this.pions)) {
-      this.pions[key].index = 0;
-      this.pions[key].onBoard = false;
-    }
-    this.savePionsToStorage();
-  }
+  /** ==================== Séquences et plateau ==================== */
 
   private genererListeSequence(cases: CasePlateau[]): { [key: string]: CasePlateau[] } {
-    const sequences: { [key: string]: CasePlateau[] } = { VERT: [], ROUGE: [] };
+    const sequences: { [key: string]: CasePlateau[] } = { VERT: [], ROUGE: [], BLEU: [], JAUNE: [] };
+
     const add = (color: string, positions: number[], targetColor?: string) => {
       const c = targetColor || color;
       sequences[color].push(
@@ -172,27 +187,11 @@ export class PlateauComponent implements OnInit {
 
     const home = [16, 17, 18, 19, 20, 21];
 
-    // Green path
-    add('VERT', Array.from({ length: 13 }, (_, i) => i + 1));
-    add('VERT', [14], 'JAUNE');
-    add('VERT', Array.from({ length: 13 }, (_, i) => i + 1), 'JAUNE');
-    add('VERT', [14], 'BLEU');
-    add('VERT', Array.from({ length: 13 }, (_, i) => i + 1), 'BLEU');
-    add('VERT', [14], 'ROUGE');
-    add('VERT', Array.from({ length: 13 }, (_, i) => i + 1), 'ROUGE');
-    add('VERT', [14], 'VERT');
-    add('VERT', home);
-
-    // Red path
-    add('ROUGE', Array.from({ length: 13 }, (_, i) => i + 1));
-    add('ROUGE', [14], 'VERT');
-    add('ROUGE', Array.from({ length: 13 }, (_, i) => i + 1), 'VERT');
-    add('ROUGE', [14], 'JAUNE');
-    add('ROUGE', Array.from({ length: 13 }, (_, i) => i + 1), 'JAUNE');
-    add('ROUGE', [14], 'BLEU');
-    add('ROUGE', Array.from({ length: 13 }, (_, i) => i + 1), 'BLEU');
-    add('ROUGE', [14], 'ROUGE');
-    add('ROUGE', home);
+    ['VERT', 'ROUGE', 'BLEU', 'JAUNE'].forEach(color => {
+      add(color, Array.from({ length: 13 }, (_, i) => i + 1));
+      add(color, [14], color); // ARRIVEE
+      add(color, home); // ECHELLE
+    });
 
     return sequences;
   }
@@ -225,15 +224,60 @@ export class PlateauComponent implements OnInit {
     return lignes;
   }
 
+  /** ==================== LocalStorage ==================== */
+
+  private savePionsToStorage() {
+    localStorage.setItem('pions', JSON.stringify(this.pions));
+  }
+
+  private restorePionsFromStorage() {
+    const saved = localStorage.getItem('pions');
+    if (saved) this.pions = JSON.parse(saved);
+  }
+
+  restartPions() {
+    this.pions.forEach(p => {
+      p.etatPion = 'ECURIE';
+      p.casePlateau = null;
+    });
+    this.savePionsToStorage();
+  }
+
+  /** ==================== Helpers ==================== */
+
+  getPionCase(color: 'VERT' | 'ROUGE' | 'BLEU' | 'JAUNE'): CasePlateau | undefined {
+    // Cherche le pion correspondant à cette couleur
+    const pion = this.pions.find(p => p.joueurPartie?.couleur === color);
+    if (!pion || pion.etatPion === 'ECURIE') return undefined;
+
+    return this.listeCasesSequence[color]?.find(c => c.id_case === pion.casePlateau);
+  }
+  getPionImgForCase(c: CasePlateau): { src: string; alt: string }[] {
+    if (!this.pions || !this.colors) return [];
+
+    return this.colors
+      .map(color => {
+        const pion = this.pions.find(p => p.joueurPartie?.couleur === color);
+        if (pion && pion.etatPion !== 'ECURIE' && pion.casePlateau === c.id_case) {
+          return {
+            src: `../../assets/Pion_${color.toLowerCase()}.png`,
+            alt: `pion ${color}`
+          };
+        }
+        return null;
+      })
+      .filter(p => p !== null) as { src: string; alt: string }[];
+  }
+
+
+
   toggleRules() {
     this.showRules = !this.showRules;
   }
 
-  getPionPath(color: 'VERT' | 'ROUGE'): string {
+  getPionPath(color: 'VERT' | 'ROUGE' | 'BLEU' | 'JAUNE'): string {
     const sequence = this.listeCasesSequence[color];
-    if (!sequence || sequence.length === 0) return '';
-
+    if (!sequence) return '';
     return sequence.map(c => `${c.couleur[0]}${c.position}`).join(' → ');
   }
-
 }
