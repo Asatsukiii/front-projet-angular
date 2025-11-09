@@ -1,3 +1,4 @@
+//modèle d'un tour
 import { Partie } from './partie.model';
 import { JoueurPartie } from './joueur-partie.model';
 

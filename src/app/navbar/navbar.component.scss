@@ -19,7 +19,6 @@ nav {
     padding: 0 2rem;
   }
 
-  /* Shared nav styling */
   mat-nav-list {
     display: flex;
     flex-direction: row;
@@ -47,14 +46,12 @@ nav {
       }
     }
 
-    /* Welcome text */
     .welcome {
       font-size: 1.1rem;
       color: #ffffff;
       font-weight: 600;
     }
 
-    /* Logout button styling */
     .logout-btn {
       background-color: rgba(255, 255, 255, 0.15);
       border: 1px solid rgba(255, 255, 255, 0.3);
@@ -83,7 +80,6 @@ nav {
     }
   }
 
-  /* Responsive design */
   @media (max-width: 768px) {
     .nav-container {
       flex-direction: column;
