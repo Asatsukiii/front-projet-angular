@@ -1,7 +1,9 @@
 <div class="plateau-container">
   <button class="help-btn" *ngIf="!showRules" (click)="toggleRules()">?</button>
+
+  <!-- Player setup form -->
   <div *ngIf="!partieCree">
-    <div *ngFor="let joueur of joueursInit; let i = index">
+    <div *ngFor="let joueur of joueursInit; let i = index" class="player-input">
       <input [(ngModel)]="joueur.pseudo" placeholder="Pseudo joueur {{i+1}}" />
       <select [(ngModel)]="joueur.couleur">
         <option value="ROUGE">ROUGE</option>
@@ -10,70 +12,73 @@
         <option value="JAUNE">JAUNE</option>
       </select>
     </div>
-
     <button (click)="startPartie()">Commencer Partie</button>
   </div>
 
+  <!-- Game view -->
   <div *ngIf="partieCree" class="game-container">
 
-    <!-- Dé et pion actif -->
-    <div class="dice-container">
-      <div class="dice-wrapper">
-        <div class="dice" [class.rolling]="isRolling">
-          {{ diceValue || '-' }}
-        </div>
-        <div class="active-pion-indicator" [ngClass]="pionColor.toLowerCase()">
-          {{ pionColor }}
+    <div class="board-wrapper">
+      <!-- Player sidebar -->
+      <div class="players-sidebar">
+        <h3>Joueurs</h3>
+        <div *ngFor="let joueur of joueursPartie" class="player-card" [ngClass]="joueur.couleur.toLowerCase()">
+          <span class="player-color" [style.backgroundColor]="joueur.couleur.toLowerCase()"></span>
+          <span class="player-pseudo">{{ joueur.joueur?.pseudo || 'Inconnu' }}</span>
         </div>
       </div>
-      <!-- changer ici pour insérer la fonction test ou la vrai   -->
-      <button (click)="rollDiceTest()" [disabled]="isRolling">Lancer le dé</button>
-    </div>
 
-    <!-- Plateau -->
-    <div class="game-board">
-      <div class="plateau">
-        <div *ngFor="let c of casesAffichees; let i = index"
-             class="case"
-             [ngClass]="[c.couleur.toLowerCase(), c.typeCase ? c.typeCase.toLowerCase() : '', i === 112 ? 'centre' : '']"
-             [title]="c.couleur + ' ' + c.position">
-          {{ c.typeCase ? c.position : '' }}
-
-          <ng-container *ngFor="let img of getPionImgForCase(c)">
-            <img [src]="img.src" [alt]="img.alt" class="pion" />
-          </ng-container>
+      <!-- Plateau + dice -->
+      <div class="board-and-dice">
+        <!-- Dice -->
+        <div class="dice-container">
+          <div class="dice-wrapper">
+            <div class="dice" [class.rolling]="isRolling">{{ diceValue || '-' }}</div>
+            <div class="active-pion-indicator" [ngClass]="pionColor.toLowerCase()">{{ pionColor }}</div>
+          </div>
+          <button (click)="rollDiceTest()" [disabled]="isRolling">Lancer le dé</button>
         </div>
 
-      </div>
+        <!-- Plateau -->
+        <div class="game-board">
+          <div class="plateau">
+            <div *ngFor="let c of casesAffichees; let i = index"
+                 class="case"
+                 [ngClass]="[c.couleur.toLowerCase(), c.typeCase ? c.typeCase.toLowerCase() : '', i === 112 ? 'centre' : '']"
+                 [title]="c.couleur + ' ' + c.position">
+              {{ c.typeCase ? c.position : '' }}
 
-      <!-- Bouton restart -->
-      <div class="restart-container">
-        <button (click)="restartPions()">Restart Pions</button>
+              <ng-container *ngFor="let img of getPionImgForCase(c)">
+                <img [src]="img.src" [alt]="img.alt" class="pion" />
+              </ng-container>
+            </div>
+          </div>
+
+          <div class="restart-container">
+            <button (click)="restartPions()">Restart Pions</button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- Panel règles -->
+  <!-- Rules panel -->
   <div class="rules-panel" [class.open]="showRules">
     <div class="rules-header">
       <h2>Règles du jeu</h2>
       <button class="close-btn" (click)="toggleRules()">✕</button>
     </div>
-    <div class="rules-content">
-      <regles></regles>
-    </div>
+    <div class="rules-content"><regles></regles></div>
   </div>
 </div>
 
+<!-- Victory modal -->
 <div class="victory-modal" *ngIf="showVictoryModal">
   <div class="victory-content">
     <h2>🏆 Victoire !</h2>
     <ul>
-      <li *ngFor="let c of classementFinal">
-        {{c.position}} - {{c.pseudo}} ({{c.couleur}})
-      </li>
+      <li *ngFor="let c of classementFinal">{{c.position}} - {{c.pseudo}} ({{c.couleur}})</li>
     </ul>
     <button (click)="closeVictoryModal()">Fermer</button>
   </div>
 </div>
-
