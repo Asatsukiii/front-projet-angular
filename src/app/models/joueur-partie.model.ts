@@ -1,3 +1,4 @@
+//modèle partie, on a les joueur et leur parties
 import { Partie } from './partie.model';
 import { Joueur } from './joueur.model';
 import {Pion} from "./pion.model";
@@ -12,7 +13,7 @@ export interface JoueurPartie {
   couleur: Couleur;
   classement?: number | null;
 
-  // Relations possibles
+  // Relations avec les autres tables
   partie?: Partie;
   joueur?: Joueur;
   pions?: Pion[];

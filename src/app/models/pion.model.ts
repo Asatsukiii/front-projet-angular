@@ -1,3 +1,4 @@
+//modèle pion
 import { JoueurPartie } from './joueur-partie.model';
 import { CasePlateau } from './case-plateau.model';
 
@@ -8,6 +9,7 @@ export interface Pion {
   joueurPartieId: number;
   casePlateau?: number | null;
   etatPion: EtatPion;
+
   joueurPartie?: {
     id: number;
     couleur: string;
@@ -16,7 +18,7 @@ export interface Pion {
     };
   };
 
-  // Relations
+  // Relations avec les autres tables
   JoueurPartie?: JoueurPartie;
   CasePlateau?: CasePlateau;
 }
