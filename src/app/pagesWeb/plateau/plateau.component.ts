@@ -5,11 +5,18 @@ import { CasePlateau } from '../../models/case-plateau.model';
 import { JoueurPartie } from "../../models/joueur-partie.model";
 import { Partie } from "../../models/partie.model";
 import { Pion, EtatPion } from "../../models/pion.model";
+import { JoueurService } from "../../services/joueur.service"
+import { JoueurPartieService } from "../../services/joueur-partie.service"
 
 interface JoueurInit {
   pseudo: string;
   couleur: 'ROUGE' | 'BLEU' | 'VERT' | 'JAUNE';
   id?: number;
+}
+interface Classement {
+  pseudo: string;
+  couleur: 'ROUGE' | 'BLEU' | 'VERT' | 'JAUNE';
+  position: number;
 }
 
 @Component({
@@ -31,7 +38,7 @@ export class PlateauComponent implements OnInit {
     { pseudo: '', couleur: 'JAUNE' }
   ];
 
-  partieCreee = false;
+  partieCree = false;
   pionColor: 'VERT' | 'ROUGE' | 'BLEU' | 'JAUNE' = 'VERT';
   colors: Array<'VERT' | 'ROUGE' | 'BLEU' | 'JAUNE'> = ['VERT', 'ROUGE', 'BLEU', 'JAUNE'];
   diceValue = 0;
@@ -40,10 +47,13 @@ export class PlateauComponent implements OnInit {
   joueursPartie: JoueurPartie[] = [];
   partie: Partie | null = null;
   showRules = false;
+  showVictoryModal = false;
+  classementFinal: Classement[] = [];
 
   constructor(
     private caseService: CasePlateauService,
-    private PartieManagerService: PartieManagerService
+    private PartieManagerService: PartieManagerService,
+    private joueurPartieService: JoueurPartieService
   ) {}
 
   ngOnInit(): void {
@@ -78,7 +88,7 @@ export class PlateauComponent implements OnInit {
           this.partie = result.partie;
           this.joueursPartie = result.joueursPartie;
           this.pions = result.pions;
-          this.partieCreee = true;
+          this.partieCree = true;
           this.savePionsToStorage();
         },
         error: (err) => {
@@ -211,7 +221,10 @@ export class PlateauComponent implements OnInit {
       if (sequence[idx].position === 21) {
         pion.etatPion = 'ARRIVE';
         console.log(`${couleur} a terminé la partie !`);
-        this.PartieManagerService.checkVictory(this.partie!, this.joueursPartie, this.pions);
+        const classement =this.PartieManagerService.checkVictory(this.partie!, this.joueursPartie, this.pions, this.listeCasesSequence);
+        if (classement) {
+          this.afficherEcranVictoire(classement);
+        }
         return
       }
       console.log("le pion ",pion.joueurPartie?.couleur, " est sur l echelle. position",pion.CasePlateau?.position);
@@ -402,6 +415,43 @@ export class PlateauComponent implements OnInit {
         alt: `pion ${p.joueurPartie?.couleur}`
       }));
   }
+
+  afficherEcranVictoire(classement: { id: number; classement: number }[]) {
+    this.classementFinal = [];
+
+    classement.forEach((c) => {
+      const jp = this.joueursPartie.find((j) => j.id === c.id);
+      if (!jp) return;
+
+      // On crée une entrée temporaire
+      const entry = {
+        pseudo: 'Chargement...',
+        couleur: jp.couleur,
+        position: c.classement
+      };
+      this.classementFinal.push(entry);
+
+
+      this.joueurPartieService.getById(jp.id).subscribe((joueurPartie) => {
+        entry.pseudo = joueurPartie.joueur?.pseudo || 'Inconnu';
+      });
+    });
+
+    this.showVictoryModal = true;
+  }
+
+  closeVictoryModal() {
+    this.showVictoryModal = false;
+
+    // Reset pour permettre de saisir les pseudos
+    this.partieCree = false;
+    this.joueursInit.forEach(j => j.pseudo = '');
+    this.pions = [];
+    this.joueursPartie = [];
+    this.partie = null;
+    localStorage.removeItem('pions');
+  }
+
 
 
 

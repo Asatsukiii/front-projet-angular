@@ -1,6 +1,6 @@
 <div class="plateau-container">
   <button class="help-btn" *ngIf="!showRules" (click)="toggleRules()">?</button>
-  <div *ngIf="!partieCreee">
+  <div *ngIf="!partieCree">
     <div *ngFor="let joueur of joueursInit; let i = index">
       <input [(ngModel)]="joueur.pseudo" placeholder="Pseudo joueur {{i+1}}" />
       <select [(ngModel)]="joueur.couleur">
@@ -14,7 +14,7 @@
     <button (click)="startPartie()">Commencer Partie</button>
   </div>
 
-  <div *ngIf="partieCreee" class="game-container">
+  <div *ngIf="partieCree" class="game-container">
 
     <!-- Dé et pion actif -->
     <div class="dice-container">
@@ -64,3 +64,16 @@
     </div>
   </div>
 </div>
+
+<div class="victory-modal" *ngIf="showVictoryModal">
+  <div class="victory-content">
+    <h2>🏆 Victoire !</h2>
+    <ul>
+      <li *ngFor="let c of classementFinal">
+        {{c.position}} - {{c.pseudo}} ({{c.couleur}})
+      </li>
+    </ul>
+    <button (click)="closeVictoryModal()">Fermer</button>
+  </div>
+</div>
+

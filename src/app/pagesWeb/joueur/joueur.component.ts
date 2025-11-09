@@ -28,36 +28,36 @@ export class JoueurComponent implements OnInit {
       // 🔹 Charger le joueur
       this.joueurService.getJoueurById(id).subscribe({
         next: (joueur) => {this.joueur = joueur;
-        console.log('✅ Joueur chargé :', joueur);
+        console.log(' Joueur chargé :', joueur);
         },
-        error: (err) => console.error('❌ Erreur chargement joueur:', err)
+        error: (err) => console.error(' Erreur chargement joueur:', err)
       });
 
       // 🔹 Charger les parties associées
       this.joueurPartieService.getByJoueurId(id).subscribe({
         next: (data) => {this.joueurParties = data;
-          console.log('✅ Parties chargé :', data);
+          console.log(' Parties chargé :', data);
           // 🔹 Charger les pions du joueur
           // 🔹 Charger les pions du joueur
           this.pionService.getPionsByJoueur(id).subscribe({
             next: (pions) => {
               this.pion = pions;
-              console.log('✅ Pions chargés :', pions);
+              console.log(' Pions chargés :', pions);
             },
-            error: (err) => console.error('❌ Erreur chargement des pions :', err)
+            error: (err) => console.error(' Erreur chargement des pions :', err)
           });
         },
-        error: (err) => console.error('❌ Erreur chargement des parties:', err)
+        error: (err) => console.error(' Erreur chargement des parties:', err)
       });
 
 
     } else {
-      console.error('❌ Aucun joueurID trouvé dans le sessionStorage');
+      console.error(' Aucun joueurID trouvé dans le sessionStorage');
     }
   }
 
 
-  // 🧠 Ces méthodes évitent les erreurs si joueur ou parties est undefined
+  // Ces méthodes évitent les erreurs si joueur ou parties est undefined
   getEnCoursCount(): number {
     return this.joueurParties.filter(jp => jp.partie?.etat_partie === 'EN_COURS').length;
   }
