@@ -8,6 +8,7 @@ export type Couleur = 'ROUGE' | 'BLEU' | 'VERT' | 'JAUNE';
 export interface JoueurPartie {
   id: number;
   joueurId: number;
+  partieId: number;
   couleur: Couleur;
   classement?: number | null;
 
