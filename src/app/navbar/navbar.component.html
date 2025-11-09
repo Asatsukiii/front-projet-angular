@@ -1,6 +1,6 @@
 <nav>
   <div class="nav-container">
-    <!-- Left-side navigation -->
+    <!-- Navigation principale -->
     <mat-nav-list class="nav-left">
       <span
         *ngFor="let link of links"
@@ -13,9 +13,9 @@
       </span>
     </mat-nav-list>
 
-    <!-- Right-side authentication / user actions -->
+    <!-- Auth -->
     <mat-nav-list class="nav-right">
-      <!-- If NOT logged in -->
+      <!-- Liens si non connecté: connexion ou inscription -->
       <ng-container *ngIf="!isLoggedIn; else loggedInTemplate">
         <span
           *ngFor="let link of authLinks"
@@ -28,9 +28,11 @@
         </span>
       </ng-container>
 
-      <!-- If logged in -->
+      <!-- Lien si connecté -->
       <ng-template #loggedInTemplate>
-        <span class="nav-item welcome">👋 Hello, {{ connectedPseudo }}</span>
+        <!-- Affichage du pseudo -->
+        <span class="nav-item welcome"> Bonjour, {{ connectedPseudo }}</span>
+        <!-- Bouton de déconnexion -->
         <button class="logout-btn" (click)="logout()">Logout</button>
       </ng-template>
     </mat-nav-list>

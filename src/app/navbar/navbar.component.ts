@@ -9,6 +9,7 @@ import { AuthService } from "../services/auth.service"
   styleUrls: ['./navbar.component.scss']
 })
 export class NavbarComponent implements OnInit, OnDestroy {
+  //Liens de navigation
   links = [
     { name: 'Accueil', href: '/home' },
     { name: 'Plateau', href: '/plateau' },
@@ -17,11 +18,13 @@ export class NavbarComponent implements OnInit, OnDestroy {
     { name: 'Regles', href: '/regles' }
   ];
 
+  //Lien de auth
   authLinks = [
-    { name: 'Login', href: '/login' },
-    { name: 'Sign in', href: '/signin' }
+    { name: 'Connexion', href: '/login' },
+    { name: 'Inscription', href: '/signin' }
   ];
 
+  //Session utilisateur
   isLoggedIn: boolean = false;
   connectedPseudo: string | null = null;
 
@@ -30,7 +33,6 @@ export class NavbarComponent implements OnInit, OnDestroy {
   constructor(private router: Router, private authService: AuthService) {}
 
   ngOnInit(): void {
-    // Reactively subscribe to auth changes
     this.subscriptions.push(
       this.authService.isLoggedIn$.subscribe(status => (this.isLoggedIn = status)),
       this.authService.pseudo$.subscribe(pseudo => (this.connectedPseudo = pseudo))
