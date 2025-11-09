@@ -2,15 +2,16 @@ import { JoueurPartie } from './joueur-partie.model';
 import { CasePlateau } from './case-plateau.model';
 
 export type EtatPion = 'ECURIE' | 'EN_JEU' | 'ARRIVE';
+export type Couleur = 'ROUGE' | 'BLEU' | 'VERT' | 'JAUNE';
 
 export interface Pion {
   idPion?: number;
-  joueurPartieId: number;
-  casePlateau?: number | null;
+  idJoueurPartie: number;
+  casePlateauID?: number | null;
   etatPion: EtatPion;
   joueurPartie?: {
     id: number;
-    couleur: string;
+    couleur: Couleur;
     partie?: {
       id: number;
     };

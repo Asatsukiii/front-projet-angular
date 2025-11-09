@@ -16,7 +16,7 @@ export class JoueurComponent implements OnInit {
   joueur?: Joueur;
   joueurParties: JoueurPartie[] = [];
   pion: Pion[] = [];
-  notLoggedIn: boolean = false; // ✅ New flag
+  notLoggedIn: boolean = false;
 
   constructor(
     private joueurService: JoueurService,
@@ -32,32 +32,36 @@ export class JoueurComponent implements OnInit {
 
       // 🔹 Charger le joueur
       this.joueurService.getJoueurById(id).subscribe({
-        next: (joueur) => { this.joueur = joueur; },
-        error: (err) => console.error('❌ Erreur chargement joueur:', err)
+        next: (joueur) => {this.joueur = joueur;
+        console.log(' Joueur chargé :', joueur);
+        },
+        error: (err) => console.error(' Erreur chargement joueur:', err)
       });
 
       // 🔹 Charger les parties associées
       this.joueurPartieService.getByJoueurId(id).subscribe({
-        next: (data) => {
-          this.joueurParties = data;
+        next: (data) => {this.joueurParties = data;
+          console.log(' Parties chargé :', data);
 
-          // 🔹 Charger les pions du joueur
           this.pionService.getPionsByJoueur(id).subscribe({
-            next: (pions) => { this.pion = pions; },
-            error: (err) => console.error('❌ Erreur chargement des pions :', err)
+            next: (pions) => {
+              this.pion = pions;
+              console.log(' Pions chargés :', pions);
+            },
+            error: (err) => console.error(' Erreur chargement des pions :', err)
           });
         },
-        error: (err) => console.error('❌ Erreur chargement des parties:', err)
+        error: (err) => console.error(' Erreur chargement des parties:', err)
       });
 
     } else {
-      // 🔹 If no joueurID in sessionStorage
-      console.warn('❌ Aucun joueurID trouvé dans le sessionStorage');
-      this.notLoggedIn = true; // ✅ Set the flag
+      console.warn(' Aucun joueurID trouvé dans le sessionStorage');
+      this.notLoggedIn = true;
     }
   }
 
-  // 🧠 Méthodes de comptage
+
+
   getEnCoursCount(): number {
     return this.joueurParties.filter(jp => jp.partie?.etat_partie === 'EN_COURS').length;
   }
