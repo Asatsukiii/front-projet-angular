@@ -7,7 +7,7 @@ export type Couleur = 'ROUGE' | 'BLEU' | 'VERT' | 'JAUNE';
 export interface Pion {
   idPion?: number;
   idJoueurPartie: number;
-  casePlateau?: number | null;
+  casePlateauID?: number | null;
   etatPion: EtatPion;
   joueurPartie?: {
     id: number;

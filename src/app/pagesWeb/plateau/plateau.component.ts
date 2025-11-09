@@ -106,6 +106,52 @@ export class PlateauComponent implements OnInit {
     }, 1000);
   }
 
+  rollDiceTest() {
+    if (this.isRolling) return;
+    this.isRolling = true;
+
+    // On récupère le pion du joueur courant
+    const pion = this.pions.find(p => p.joueurPartie?.couleur === this.pionColor);
+    if (!pion) {
+      console.warn("Aucun pion trouvé pour", this.pionColor);
+      this.isRolling = false;
+      return;
+    }
+
+    let valeur = 6;
+
+    // Cas 1 : le pion est dans l'écurie
+    if (pion.etatPion === 'ECURIE') {
+      valeur = 6;
+    }
+    else {
+      const caseCourante = this.listeCasesSequence[this.pionColor].find(c => c.idCase === pion.casePlateauID);
+
+      if (caseCourante) {
+        const pos = caseCourante.position;
+
+        // Cas 2 : arrivé (position 14) ou sur échelle (positions 16 à 20)
+        if (pos === 14) valeur = 1;
+        else if (pos >= 16 && pos <= 20) valeur = pos - 14; // 16→1, 17→2, ..., 20→5
+        else if (pos === 21) valeur = 6; // terminé → 6 par défaut
+        // Cas 3 : plateau normal
+        else valeur = 6;
+      }
+    }
+
+    this.diceValue = valeur;
+    console.log(` [TEST] Dé pour ${this.pionColor} = ${valeur}`);
+
+    setTimeout(() => {
+      if (pion) this.movePion(pion, valeur);
+
+      this.isRolling = false;
+      this.savePionsToStorage();
+      this.switchPion();
+    }, 500);
+  }
+
+
   switchPion() {
     const colors: ('VERT' | 'ROUGE' | 'BLEU' | 'JAUNE')[] = ['VERT', 'ROUGE', 'BLEU', 'JAUNE'];
     const currentIndex = colors.indexOf(this.pionColor);
@@ -124,7 +170,7 @@ export class PlateauComponent implements OnInit {
         const caseDepart = sequence.find(c => c.position === 1 && c.couleur === couleur);
         console.log("caseDepart trouvé:",caseDepart)
         if (caseDepart) {
-          pion.casePlateau = caseDepart.idCase;
+          pion.casePlateauID = caseDepart.idCase;
           console.log('Pion sorti de l\'écurie:', pion);
         } else {
           console.error('Pas de case de départ trouvée pour couleur', couleur, sequence);
@@ -134,7 +180,7 @@ export class PlateauComponent implements OnInit {
     }
 
     // Index actuel
-    let idx = sequence.findIndex(c => c.idCase === pion.casePlateau);
+    let idx = sequence.findIndex(c => c.idCase === pion.casePlateauID);
     if (idx < 0) return;
 
     const currentCase = sequence[idx];
@@ -146,21 +192,32 @@ export class PlateauComponent implements OnInit {
         const nextIndex = sequence.findIndex(c => c.couleur === couleur && c.position === 16);
         if (nextIndex >= 0) idx = nextIndex;
       }
-      pion.casePlateau = sequence[idx].idCase;
+      pion.casePlateauID = sequence[idx].idCase;
+      pion.CasePlateau = sequence[idx];
       return;
     }
 
-    if (currentCase.position >= 16 && currentCase.position <= 21 && currentCase.couleur === couleur) {
-      console.log("le pion ",pion.joueurPartie?.couleur, " est sur l echelle. position",pion.CasePlateau?.position);
+    if (currentCase.position >= 16 && currentCase.position < 21 && currentCase.couleur === couleur) {
+
       const nextPosition = currentCase.position + 1;
       const requiredRoll = nextPosition - 15;
       if (steps === requiredRoll) {
         const nextIndex = sequence.findIndex(c => c.couleur === couleur && c.position === nextPosition);
         if (nextIndex >= 0) idx = nextIndex;
       }
-      pion.casePlateau = sequence[idx].idCase;
+      pion.casePlateauID = sequence[idx].idCase;
+      pion.CasePlateau = sequence[idx];
+
+      if (sequence[idx].position === 21) {
+        pion.etatPion = 'ARRIVE';
+        console.log(`${couleur} a terminé la partie !`);
+        this.PartieManagerService.checkVictory(this.partie!, this.joueursPartie, this.pions);
+        return
+      }
+      console.log("le pion ",pion.joueurPartie?.couleur, " est sur l echelle. position",pion.CasePlateau?.position);
       return;
     }
+
 
     // Avancée normale
     for (let i = 0; i < steps; i++) {
@@ -176,8 +233,9 @@ export class PlateauComponent implements OnInit {
     }
 
     pion.CasePlateau = sequence[idx];
-    pion.casePlateau = sequence[idx].idCase;
+    pion.casePlateauID = sequence[idx].idCase;
     console.log("le pion ",pion.joueurPartie?.couleur, " est maintenant sur la case:",pion.CasePlateau?.position, " de couleur:", pion.CasePlateau?.couleur);
+
   }
 
   /** ==================== Séquences et plateau ==================== */
@@ -281,7 +339,7 @@ export class PlateauComponent implements OnInit {
   private savePionsToStorage() {
     const toSave = this.pions.map(p => ({
       idPion: p.idPion,
-      casePlateau: p.casePlateau,
+      casePlateau: p.casePlateauID,
       etatPion: p.etatPion,
       couleur: p.joueurPartie?.couleur, // stocke la couleur directement
       joueurPartieId: p.joueurPartie?.id
@@ -307,7 +365,7 @@ export class PlateauComponent implements OnInit {
 
     this.pions = parsed.map(p => ({
       idPion: p.idPion,
-      casePlateau: p.casePlateau,
+      casePlateauID: p.casePlateau,
       etatPion: p.etatPion,
       idJoueurPartie: p.joueurPartieId!,
       joueurPartie: p.couleur
@@ -319,7 +377,7 @@ export class PlateauComponent implements OnInit {
   restartPions() {
     this.pions.forEach(p => {
       p.etatPion = 'ECURIE';
-      p.casePlateau = null;
+      p.casePlateauID = null;
     });
     this.savePionsToStorage();
   }
@@ -331,14 +389,14 @@ export class PlateauComponent implements OnInit {
     const pion = this.pions.find(p => p.joueurPartie?.couleur === color);
     if (!pion || pion.etatPion === 'ECURIE') return undefined;
 
-    return this.listeCasesSequence[color]?.find(c => c.idCase === pion.casePlateau);
+    return this.listeCasesSequence[color]?.find(c => c.idCase === pion.casePlateauID);
   }
 
   getPionImgForCase(c: CasePlateau): { src: string; alt: string }[] {
     if (!this.pions|| c.typeCase=="ECURIE") return [];
 
     return this.pions
-      .filter(p => p.casePlateau === c.idCase && p.etatPion !== 'ECURIE')
+      .filter(p => p.casePlateauID === c.idCase && p.etatPion !== 'ECURIE')
       .map(p => ({
         src: `../../assets/Pion_${p.joueurPartie?.couleur.toLowerCase()}.png`,
         alt: `pion ${p.joueurPartie?.couleur}`

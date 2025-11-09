@@ -4,5 +4,5 @@ export interface StatistiquesJoueur {
   idJoueur?: number;
   partiesJouees: number;
   partiesGagnees: number;
-  joueur: Joueur;
+  joueur?: Joueur;
 }

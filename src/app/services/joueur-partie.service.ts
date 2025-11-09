@@ -19,7 +19,7 @@ export class JoueurPartieService {
   }
 
   getById(id: number): Observable<JoueurPartie> {
-    return this.http.get<JoueurPartie>(`${this.apiUrl}${id}/`);
+    return this.http.get<JoueurPartie>(`${this.apiUrl}/${id}`);
   }
 
   create(data: JoueurPartie): Observable<JoueurPartie> {
@@ -42,14 +42,19 @@ export class JoueurPartieService {
 
 
   updateJoueurPartie(id: number, data: JoueurPartie): Observable<JoueurPartie> {
-    return this.http.put<JoueurPartie>(`${this.apiUrl}${id}/`, data);
+    return this.http.put<JoueurPartie>(`${this.apiUrl}/${id}/`, data);
   }
 
   delete(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}${id}/`);
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
   getByJoueurId(joueurId:number):  Observable<JoueurPartie[]> {
-    return this.http.get<JoueurPartie[]>(`${this.apiUrl}joueur/${joueurId}`);
+    return this.http.get<JoueurPartie[]>(`${this.apiUrl}/joueur/${joueurId}`);
+  }
+
+  updateClassement(id: number, classement: number): Observable<JoueurPartie> {
+    const body = { classement };
+    return this.http.put<JoueurPartie>(`${this.apiUrl}/${id}?classement=${classement}`, {});
   }
 
 }

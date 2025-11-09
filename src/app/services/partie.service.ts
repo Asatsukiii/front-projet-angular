@@ -16,7 +16,7 @@ export class PartieService {
   }
 
   getById(id: number): Observable<Partie> {
-    return this.http.get<Partie>(`${this.apiUrl}${id}/`);
+    return this.http.get<Partie>(`${this.apiUrl}/${id}/`);
   }
 
   getPartiesByJoueur(idJoueur: number): Observable<Partie[]> {
@@ -28,10 +28,15 @@ export class PartieService {
   }
 
   update(id: number, data: Partie): Observable<Partie> {
-    return this.http.put<Partie>(`${this.apiUrl}${id}/`, data);
+    return this.http.put<Partie>(`${this.apiUrl}/${id}/`, data);
+  }
+
+  updateEtatPartie(id: number, etat_partie: string): Observable<Partie> {
+    const body = { etat: etat_partie };
+    return this.http.patch<Partie>(`${this.apiUrl}/${id}/etat`, body);
   }
 
   delete(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}${id}/`);
+    return this.http.delete<void>(`${this.apiUrl}/${id}/`);
   }
 }

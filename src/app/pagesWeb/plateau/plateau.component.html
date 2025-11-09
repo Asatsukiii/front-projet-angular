@@ -10,6 +10,7 @@
         <option value="JAUNE">JAUNE</option>
       </select>
     </div>
+
     <button (click)="startPartie()">Commencer Partie</button>
   </div>
 
@@ -25,7 +26,8 @@
           {{ pionColor }}
         </div>
       </div>
-      <button (click)="rollDice()" [disabled]="isRolling">Lancer le dé</button>
+      <!-- changer ici pour insérer la fonction test ou la vrai   -->
+      <button (click)="rollDiceTest()" [disabled]="isRolling">Lancer le dé</button>
     </div>
 
     <!-- Plateau -->
