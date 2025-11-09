@@ -32,9 +32,8 @@ export class JoueurPartieService {
       classement: (data as JoueurPartie).classement ?? null
     };
 
-
     if (!dto.joueurId || !dto.partieId) {
-      throw new Error(`Impossible de créer JoueurPartie : idJoueur=${dto.idJoueur}, idPartie=${dto.partieId}`);
+      throw new Error(`Impossible de créer JoueurPartie : joueurId=${dto.joueurId}, partieId=${dto.partieId}`);
     }
     console.log("JoueurPartie : ,idJoueur=",dto.joueurId," idPartie=",dto.partieId)
 
@@ -56,9 +55,10 @@ export class JoueurPartieService {
     return this.http.get<JoueurPartie[]>(`${this.apiUrl}/joueur/${joueurId}`);
   }
 
-  //update le classement du joueur pour cette partie
+  // update le classement du joueur pour cette partie
   updateClassement(id: number, classement: number): Observable<JoueurPartie> {
     const body = { classement };
+    // Some backends expect a body; others rely on query params — keep query param approach but send an empty body to satisfy HttpClient.
     return this.http.put<JoueurPartie>(`${this.apiUrl}/${id}?classement=${classement}`, {});
   }
 }

@@ -4,7 +4,7 @@ import { JoueurPartieService } from './joueur-partie.service';
 import { PionService } from './pion.service';
 import { Partie } from '../models/partie.model';
 import { Couleur, JoueurPartie } from "../models/joueur-partie.model";
-import { forkJoin, switchMap, map, Observable, of } from "rxjs";
+import { forkJoin, switchMap, map, Observable, of, catchError, tap } from "rxjs";
 import { EtatPion, Pion } from "../models/pion.model";
 import { JoueurService } from "./joueur.service";
 import { StatistiquesJoueurService } from "./statistiques-joueur.service";
@@ -24,80 +24,96 @@ export class PartieManagerService {
 
   /**
    * Crée une partie complète avec les joueurs et 1 pion chacun.
-   * Le pion est positionné sur la case d'écurie correspondant à sa couleur.
+   * Process:
+   *  1) Vérifie quels pseudos existent déjà
+   *  2) Crée uniquement ceux qui manquent
+   *  3) Crée la partie, les JoueurPartie et les pions
+   * Retourne aussi la liste des pseudos créés.
    */
   createPartieComplete(
     pseudos: string[],
     couleurs: ("ROUGE" | "BLEU" | "VERT" | "JAUNE")[]
-  ): Observable<{ partie: Partie; joueursPartie: JoueurPartie[]; pions: Pion[] }> {
-    const joueurs = pseudos.map((pseudo, i) => ({
-      pseudo,
-      couleur: couleurs[i],
-    }));
+  ): Observable<{ partie: Partie; joueursPartie: JoueurPartie[]; pions: Pion[]; createdPlayers: string[] }> {
 
-    const newPartie: Partie = { etat_partie: "EN_COURS" };
+    const createdPlayers: string[] = [];
 
-    const caseEcurieMap: Record<"ROUGE" | "BLEU" | "VERT" | "JAUNE", number> = {
-      ROUGE: 15,
-      JAUNE: 36,
-      VERT: 57,
-      BLEU: 78,
-    };
+    // STEP 1: Check which players exist (getJoueurByPseudo should return 404 or null if not found)
+    const checkRequests = pseudos.map(pseudo =>
+      this.joueurService.getJoueurByPseudo(pseudo).pipe(
+        // If endpoint throws, treat as not found
+        catchError(() => of(null))
+      )
+    );
 
-    return this.partieService.create(newPartie).pipe(
-      switchMap((createdPartie) => {
-        const jpRequests = joueurs.map((j) =>
-          this.joueurService.getJoueurByPseudo(j.pseudo).pipe(
-            switchMap((existing) => {
-              const joueurIdObs = existing
-                ? of(existing.id)
-                : this.joueurService.createJoueur(j.pseudo).pipe(map((u) => u.id));
+    return forkJoin(checkRequests).pipe(
+      // STEP 2: create only missing players
+      switchMap((existingResults) => {
+        const creationRequests = existingResults.map((existing, index) => {
+          if (existing) {
+            // already exists
+            return of(existing);
+          }
+          // create missing player, track name
+          return this.joueurService.createJoueur(pseudos[index]).pipe(
+            tap(() => createdPlayers.push(pseudos[index]))
+          );
+        });
 
-              return joueurIdObs.pipe(
-                switchMap((joueurId) => {
-                  if (joueurId === undefined || joueurId === null) {
-                    throw new Error(`Joueur ID is undefined for pseudo ${j.pseudo}`);
-                  }
+        return forkJoin(creationRequests);
+      }),
 
-                  const jp: Partial<JoueurPartie> = {
-                    joueurId,
-                    partieId: createdPartie.id_partie!,
-                    couleur: j.couleur,
-                  };
+      // STEP 3: once all players exist, create partie, joueursPartie and pions
+      switchMap((finalJoueurs) => {
+        const newPartie: Partie = { etat_partie: "EN_COURS" };
 
-                  return this.joueurPartieService.create(jp as JoueurPartie).pipe(
-                    switchMap((createdJp) =>
-                      this.joueurService.getJoueurById(joueurId).pipe(
-                        map((joueur) => ({ ...createdJp, joueur }))
-                      )
-                    )
-                  );
-                })
+        return this.partieService.create(newPartie).pipe(
+          switchMap((createdPartie) => {
+            // create JoueurPartie entries sequentially (but via forkJoin for parallel creation)
+            const jpRequests = finalJoueurs.map((j: any, i: number) => {
+              const jpPayload: Partial<JoueurPartie> = {
+                joueurId: j.id,
+                partieId: createdPartie.id_partie!,
+                couleur: couleurs[i]
+              };
+              return this.joueurPartieService.create(jpPayload as JoueurPartie).pipe(
+                switchMap((createdJp) =>
+                  this.joueurService.getJoueurById(createdJp.joueurId!).pipe(
+                    map(joueur => ({ ...createdJp, joueur }))
+                  )
+                )
               );
-            })
-          )
-        );
-
-        return forkJoin(jpRequests).pipe(
-          switchMap((joueursPartieAvecJoueur) => {
-            const pionRequests = joueursPartieAvecJoueur.map((jp) => {
-              if (jp.id === undefined || jp.id === null) {
-                throw new Error(`JoueurPartie ID is undefined for couleur ${jp.couleur}`);
-              }
-
-              return this.pionService.create({
-                idJoueurPartie: jp.id,
-                idCasePlateau: caseEcurieMap[jp.couleur as keyof typeof caseEcurieMap],
-                etatPion: "ECURIE" as EtatPion,
-              });
             });
 
-            return forkJoin(pionRequests).pipe(
-              map((pions) => ({
-                partie: createdPartie,
-                joueursPartie: joueursPartieAvecJoueur,
-                pions,
-              }))
+            return forkJoin(jpRequests).pipe(
+              switchMap((joueursPartieAvecJoueur) => {
+                const caseEcurieMap = {
+                  ROUGE: 15,
+                  JAUNE: 36,
+                  VERT: 57,
+                  BLEU: 78,
+                } as const;
+
+                const pionRequests = joueursPartieAvecJoueur.map((jp: any) => {
+                  if (jp.id === undefined || jp.id === null) {
+                    throw new Error(`JoueurPartie ID is undefined for couleur ${jp.couleur}`);
+                  }
+
+                  return this.pionService.create({
+                    idJoueurPartie: jp.id,
+                    idCasePlateau: caseEcurieMap[jp.couleur as keyof typeof caseEcurieMap],
+                    etatPion: "ECURIE" as EtatPion,
+                  });
+                });
+
+                return forkJoin(pionRequests).pipe(
+                  map((pions) => ({
+                    partie: createdPartie,
+                    joueursPartie: joueursPartieAvecJoueur,
+                    pions,
+                    createdPlayers,
+                  }))
+                );
+              })
             );
           })
         );
@@ -138,7 +154,9 @@ export class PartieManagerService {
       });
 
       partie.etat_partie = "TERMINEE";
-      this.partieService.updateEtatPartie(partie.id_partie!, "TERMINEE").subscribe();
+      if (partie.id_partie) {
+        this.partieService.updateEtatPartie(partie.id_partie, "TERMINEE").subscribe();
+      }
     } else {
       console.log("Aucun gagnant pour l'instant.");
     }
