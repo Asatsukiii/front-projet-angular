@@ -2,18 +2,20 @@
   <button class="help-btn" *ngIf="!showRules" (click)="toggleRules()">?</button>
 
   <!-- Player setup form -->
-  <!-- Player setup form -->
-  <div *ngIf="!partieCree">
-    <div *ngFor="let joueur of joueursInit; let i = index" class="player-input">
-      <input [(ngModel)]="joueur.pseudo" placeholder="Pseudo joueur {{i+1}}" />
-      <span class="assigned-color">
-      Couleur :
-      <span>
-        {{ i === 0 ? 'ROUGE' : i === 1 ? 'BLEU' : i === 2 ? 'VERT' : 'JAUNE' }}
-      </span>
-    </span>
+  <div class="player-setup" *ngIf="!partieCree">
+    <div class="player-setup">
+      Bonjour ! veuillez rentrer les pseudos des joueurs. Ceux-ci doivent avoir été créé précédemment dans la page inscription !
     </div>
-    <button (click)="startPartie()">Commencer Partie</button>
+    <div *ngFor="let joueur of joueursInit; let i = index" class="player-input"
+         [ngClass]="i === 0 ? 'rouge' : i === 1 ? 'bleu' : i === 2 ? 'vert' : 'jaune'">
+  <span class="assigned-color">
+    Couleur :
+    <span class="color-circle"></span>
+    {{ i === 0 ? 'ROUGE' : i === 1 ? 'BLEU' : i === 2 ? 'VERT' : 'JAUNE' }}
+  </span>
+      <input [(ngModel)]="joueur.pseudo" placeholder="Pseudo joueur {{i+1}}" />
+    </div>
+    <button class="player-setup" (click)="startPartie()">Commencer Partie</button>
   </div>
 
   <!-- Game view -->
@@ -44,6 +46,7 @@
             <div class="dice" [class.rolling]="isRolling">{{ diceValue || '-' }}</div>
             <div class="active-pion-indicator" [ngClass]="pionColor.toLowerCase()">{{ pionColor }}</div>
           </div>
+
           <button (click)="rollDiceTest()" [disabled]="isRolling">Lancer le dé</button>
         </div>
 

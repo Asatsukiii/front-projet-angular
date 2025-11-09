@@ -1,3 +1,114 @@
+/* ==================== Player Setup Form ==================== */
+.player-setup {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 20px;
+  margin-top: 40px;
+  padding: 25px;
+  background-color: #fffefc;
+  border: 2px solid #ddd;
+  border-radius: 15px;
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+  max-width: 450px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.player-input {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 70%;
+  padding: 10px;
+  border-radius: 10px;
+  transition: all 0.3s;
+  gap: 5px;
+}
+
+
+.player-input.rouge { background: #ffb6b6; }
+.player-input.rouge:hover { background: #ff7f7f; transform: translateX(3px); }
+
+.player-input.bleu { background: #b3d9ff; }
+.player-input.bleu:hover { background: #339cff; transform: translateX(3px); }
+
+.player-input.vert { background: #b2ffb6; }
+.player-input.vert:hover { background: #5cd16b; transform: translateX(3px); }
+
+.player-input.jaune { background: #fffccc; }
+.player-input.jaune:hover { background: #ffec3d; transform: translateX(3px); }
+
+/* Cercle couleur */
+.color-circle {
+  display: inline-block;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  margin-left: 5px;
+}
+
+.player-input.rouge .color-circle { background-color: #c0392b; }
+.player-input.bleu .color-circle { background-color: #007bff; }
+.player-input.vert .color-circle { background-color: #28a745; }
+.player-input.jaune .color-circle { background-color: #ffec3d; }
+
+
+.assigned-color {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: bold;
+  font-size: 0.9rem;
+  color: #333;
+}
+
+.assigned-color .color-circle {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1px solid #fff;
+}
+
+.player-input input {
+  width: 100%;
+  padding: 8px 12px;
+  text-align: center;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  transition: border 0.2s, box-shadow 0.2s;
+}
+
+.player-input input:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+  outline: none;
+}
+
+/* Bouton Commencer Partie */
+.player-setup button {
+  margin-top: 15px;
+  padding: 12px 25px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #fff;
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s, background 0.3s;
+}
+
+.player-setup button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.25);
+  background: linear-gradient(135deg, #1d4ed8, #2563eb);
+}
+
+
 .plateau-container {
   position: relative;
 
