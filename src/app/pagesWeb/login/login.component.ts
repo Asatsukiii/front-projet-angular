@@ -10,6 +10,7 @@ import { AuthService } from '../../services/auth.service';
   styleUrls: ['./login.component.scss']
 })
 export class LoginComponent implements OnInit {
+  //Infos joueur
   pseudo: string = '';
   alreadyLoggedIn: boolean = false;
   connectedPseudo: string | null = null;
@@ -26,28 +27,21 @@ export class LoginComponent implements OnInit {
   }
 
   onLogin() {
-    if (this.alreadyLoggedIn) {
-      alert('You are already connected. Please logout first.');
-      return;
-    }
-
     this.joueurService.getJoueurByPseudo(this.pseudo).subscribe({
       next: (joueur: Joueur) => {
         if (joueur.id !== undefined) {
           this.authService.login(joueur.id, joueur.pseudo);
           this.router.navigate(['/joueur']);
         } else {
-          console.error('Joueur ID is undefined');
+          //error si le joueur n'a pas d'ID
+          console.error('Joueur ID non défini');
         }
       },
+      //Erreur si le joueur n'existe pas
       error: (err) => {
         console.error('Pseudo not found', err);
-        alert('Pseudo not found. Please check your pseudo or register.');
+        alert('Pseudo non trouvé. Merci de vérifier votre pseudo ou de vous inscrire.');
       }
     });
-  }
-
-  onLogout() {
-    this.authService.logout();
   }
 }

@@ -1,6 +1,7 @@
 <div class="signin-container">
-  <h2>Sign in</h2>
+  <h2>Inscription</h2>
 
+  <!-- Formulaire d'inscription -->
   <form (ngSubmit)="onSignin()" #loginForm="ngForm">
     <label for="pseudo">Pseudo:</label>
     <input
@@ -9,9 +10,10 @@
       name="pseudo"
       [(ngModel)]="pseudo"
       required
-      placeholder="Enter your pseudo"
+      placeholder="Entrer votre pseudo"
     />
 
-    <button type="submit" [disabled]="!loginForm.form.valid">Submit</button>
+    <!-- Bouton uniquement actif s'il n'y a rien dans le champ-->
+    <button type="submit" [disabled]="!loginForm.form.valid">Soumettre</button>
   </form>
 </div>
