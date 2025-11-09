@@ -2,28 +2,36 @@
   <button class="help-btn" *ngIf="!showRules" (click)="toggleRules()">?</button>
 
   <!-- Player setup form -->
+  <!-- Player setup form -->
   <div *ngIf="!partieCree">
     <div *ngFor="let joueur of joueursInit; let i = index" class="player-input">
       <input [(ngModel)]="joueur.pseudo" placeholder="Pseudo joueur {{i+1}}" />
-      <select [(ngModel)]="joueur.couleur">
-        <option value="ROUGE">ROUGE</option>
-        <option value="BLEU">BLEU</option>
-        <option value="VERT">VERT</option>
-        <option value="JAUNE">JAUNE</option>
-      </select>
+      <span class="assigned-color">
+      Couleur :
+      <span>
+        {{ i === 0 ? 'ROUGE' : i === 1 ? 'BLEU' : i === 2 ? 'VERT' : 'JAUNE' }}
+      </span>
+    </span>
     </div>
     <button (click)="startPartie()">Commencer Partie</button>
   </div>
 
   <!-- Game view -->
   <div *ngIf="partieCree" class="game-container">
-
     <div class="board-wrapper">
       <!-- Player sidebar -->
       <div class="players-sidebar">
         <h3>Joueurs</h3>
-        <div *ngFor="let joueur of joueursPartie" class="player-card" [ngClass]="joueur.couleur.toLowerCase()">
-          <span class="player-color" [style.backgroundColor]="joueur.couleur.toLowerCase()"></span>
+        <div *ngFor="let joueur of joueursPartie; let i = index"
+             class="player-card"
+             [ngClass]="i === 0 ? 'rouge' : i === 1 ? 'bleu' : i === 2 ? 'vert' : 'jaune'">
+          <span class="player-color"
+                [style.backgroundColor]="
+                  i === 0 ? '#c0392b' :
+                  i === 1 ? '#007bff' :
+                  i === 2 ? '#28a745' :
+                  '#fff799'
+                "></span>
           <span class="player-pseudo">{{ joueur.joueur?.pseudo || 'Inconnu' }}</span>
         </div>
       </div>
