@@ -49,7 +49,7 @@ export class PlateauComponent implements OnInit {
   ];
 
   partieCree = false;
-  // Order: VERT -> JAUNE -> BLEU -> ROUGE
+  // Ordre de jeu: VERT -> JAUNE -> BLEU -> ROUGE
   pionColor: 'VERT' | 'ROUGE' | 'BLEU' | 'JAUNE' = 'VERT';
   colors: Array<'VERT' | 'JAUNE' | 'BLEU' | 'ROUGE'> = ['VERT', 'JAUNE', 'BLEU', 'ROUGE'];
   diceValue = 0;
@@ -261,6 +261,7 @@ export class PlateauComponent implements OnInit {
   /** ==================== Déplacement des pions ==================== */
 
   // Fonction permettant de faire rouler le dé. retourne un nombre aléatoire entre 1 et 6
+  // si le joueur fait 6 il peut relancer
   rollDice() {
     if (this.isRolling) return;
     if (this.canReroll && this.pionColor !== this.pendingRerollColor) return;
@@ -367,6 +368,7 @@ export class PlateauComponent implements OnInit {
   // les mouvement du pion vont dépendre du type de case sur lequel il se trouve.
   // pour sortir de l'écurie il doit faire un 6
   // une fois sortie il avance du nombre donné par le lancé de dé
+  // s'il fait un 6, il peut relancer le dé
   // une fois qu'il a fait un nombre lui permettant d'atteindre sa case arrivé, il s'arrête dessus et n'avance plus
   // il doit alors monter l'échelle en faisant 1, puis 2, 3,... jusqu'a 6 ou il remporte la partie
   // une fois que la partie est remporté par un pion, on appelle la fonction de gestion de victoire et on affiche la fenêtre de victoire
