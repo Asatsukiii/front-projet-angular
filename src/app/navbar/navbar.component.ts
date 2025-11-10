@@ -9,7 +9,7 @@ import { AuthService } from "../services/auth.service"
   styleUrls: ['./navbar.component.scss']
 })
 export class NavbarComponent implements OnInit, OnDestroy {
-  //Liens de navigation
+  //Liens de navigation principale
   links = [
     { name: 'Accueil', href: '/home' },
     { name: 'Plateau', href: '/plateau' },
@@ -18,7 +18,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
     { name: 'Regles', href: '/regles' }
   ];
 
-  //Lien de auth
+  //Lien pour authentification
   authLinks = [
     { name: 'Connexion', href: '/login' },
     { name: 'Inscription', href: '/signin' }

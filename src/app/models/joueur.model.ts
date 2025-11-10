@@ -8,7 +8,7 @@ export interface Joueur {
   partiesJouees: number;
   partiesGagnees: number;
 
-  //Relaton avec les autres tables
+  //Relations avec les autres tables
   parties?: Partie[];
   pions?: Pion[];
 }

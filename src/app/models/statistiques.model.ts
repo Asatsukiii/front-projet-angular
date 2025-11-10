@@ -1,4 +1,4 @@
-//modèle stats
+//modèle statistiques joueurs
 import { Joueur } from './joueur.model';
 
 export interface StatistiquesJoueur {

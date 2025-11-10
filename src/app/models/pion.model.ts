@@ -1,4 +1,5 @@
-//modèle pion. chaque pion est relié à un joueurPartie qui fait le lien entre le pion, le joueur et la partie
+//modèle pion.
+//Chaque pion est relié à un joueurPartie qui fait le lien entre le pion, le joueur et la partie
 import { JoueurPartie } from './joueur-partie.model';
 import { CasePlateau } from './case-plateau.model';
 
@@ -19,7 +20,7 @@ export interface Pion {
     };
   };
 
-  // Relations avec les autres tables
+  //Relations avec les autres tables
   JoueurPartie?: JoueurPartie;
   CasePlateau?: CasePlateau;
 }
