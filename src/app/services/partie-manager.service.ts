@@ -37,23 +37,20 @@ export class PartieManagerService {
 
     const createdPlayers: string[] = [];
 
-    // STEP 1: verifie si les joeueur existe (getJoueurByPseudo devrait retourner 404 ou null s'ils ne sont pas trouvés)
+    // verifie si les joeueur existe (getJoueurByPseudo devrait retourner 404 ou null s'ils ne sont pas trouvés)
     const checkRequests = pseudos.map(pseudo =>
       this.joueurService.getJoueurByPseudo(pseudo).pipe(
-        // If endpoint throws, treat as not found
         catchError(() => of(null))
       )
     );
 
     return forkJoin(checkRequests).pipe(
-      // STEP 2: create only missing players
+      // créé en base uniquement les joueurs non existants
       switchMap((existingResults) => {
         const creationRequests = existingResults.map((existing, index) => {
           if (existing) {
-            // already exists
             return of(existing);
           }
-          // create missing player, track name
           return this.joueurService.createJoueur(pseudos[index]).pipe(
             tap(() => createdPlayers.push(pseudos[index]))
           );
@@ -62,13 +59,13 @@ export class PartieManagerService {
         return forkJoin(creationRequests);
       }),
 
-      // STEP 3: once all players exist, create partie, joueursPartie and pions
+      // Une fois que tous les joueurs existe, on créé la partie, et les joueursPartie and pions associés
       switchMap((finalJoueurs) => {
         const newPartie: Partie = { etat_partie: "EN_COURS" };
 
         return this.partieService.create(newPartie).pipe(
           switchMap((createdPartie) => {
-            // create JoueurPartie entries sequentially (but via forkJoin for parallel creation)
+
             const jpRequests = finalJoueurs.map((j: any, i: number) => {
               const jpPayload: Partial<JoueurPartie> = {
                 joueurId: j.id,
@@ -121,6 +118,9 @@ export class PartieManagerService {
     );
   }
 
+  // fonction de gestion de la victoire. une fois qu'un des joueurs arrive en haut de l'échelle, cette fonction est appelée.
+  // On trouve d'abord le gagnant en fonction de son emplacement: il est sur la position 21 de sa couleur.
+  // On update le classement pour chacun de nos joueurs parties et on passe le statut partie à: terminé.
   checkVictory(
     partie: Partie,
     joueursPartie: JoueurPartie[],
@@ -164,6 +164,8 @@ export class PartieManagerService {
     return this.classementSorted;
   }
 
+  // cette fonction nous permet de mettre en place le classement en fonction de la distance séparant le pion de la case arrivée
+  // elle se base sur les séquences de case par couleurs définies dans plateau components
   private calculerClassement(
     pions: Pion[],
     listeCasesSequence: { [key: string]: CasePlateau[] }
@@ -191,6 +193,9 @@ export class PartieManagerService {
     return distances;
   }
 
+  // cette fonction nous permet de mettre a jour les statistiques de chaque joueur.
+  // pour le joueur gagnant : il fait + 1 dans parties réalisées et parties gagnées
+  // pour les autres: il rajoute 1 dans les parties réalisées
   private updateStatsJoueur(idJoueur: number, gagne: boolean) {
     this.statistiquesJoueurService.getByJoueurId(idJoueur).subscribe((stat) => {
       if (stat) {
