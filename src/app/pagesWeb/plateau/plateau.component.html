@@ -4,7 +4,7 @@
   <!-- Player setup form -->
   <div class="player-setup" *ngIf="!partieCree">
     <div class="player-setup">
-      Bonjour ! veuillez rentrer les pseudos des joueurs. Ceux-ci doivent avoir été créé précédemment dans la page inscription !
+      Bonjour ! veuillez rentrer les pseudos des joueurs.
     </div>
     <div *ngFor="let joueur of joueursInit; let i = index" class="player-input"
          [ngClass]="i === 0 ? 'rouge' : i === 1 ? 'bleu' : i === 2 ? 'vert' : 'jaune'">

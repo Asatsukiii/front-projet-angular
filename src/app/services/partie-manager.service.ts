@@ -37,7 +37,7 @@ export class PartieManagerService {
 
     const createdPlayers: string[] = [];
 
-    // STEP 1: Check which players exist (getJoueurByPseudo should return 404 or null if not found)
+    // STEP 1: verifie si les joeueur existe (getJoueurByPseudo devrait retourner 404 ou null s'ils ne sont pas trouvés)
     const checkRequests = pseudos.map(pseudo =>
       this.joueurService.getJoueurByPseudo(pseudo).pipe(
         // If endpoint throws, treat as not found

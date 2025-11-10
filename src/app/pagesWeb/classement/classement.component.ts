@@ -35,7 +35,12 @@ export class ClassementComponent implements OnInit {
               ? (stat.partiesGagnees / stat.partiesJouees) * 100
               : 0
           }))
-          .sort((a, b) => b.tauxVictoire - a.tauxVictoire)
+          .sort((a, b) =>{
+            if (b.partiesGagnees !== a.partiesGagnees) {
+              return b.partiesGagnees - a.partiesGagnees;
+            }
+            return b.tauxVictoire - a.tauxVictoire;
+          })
           .map((joueur, index) => ({
             ...joueur,
             position: index + 1
