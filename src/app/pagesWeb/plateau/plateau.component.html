@@ -49,7 +49,9 @@
           <!-- Pour des raisons de tests, on a mis ici un dé pipé qui correspond a la fonction rollDiceTest () -->
           <!-- Pour un fonctionnement normal du jeu, utiliser la fonction : rollDice()-->
           <button (click)="rollDiceTest()" [disabled]="isRolling">Lancer le dé</button>
-        </div>
+          <!-- popup pour l'obtention d'un 6 -->
+          <div *ngIf="message" class="popup-message">{{ message }}</div>
+
 
         <!-- Plateau -->
         <div class="game-board">

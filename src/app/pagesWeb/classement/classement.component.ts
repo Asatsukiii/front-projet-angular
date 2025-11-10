@@ -3,7 +3,7 @@ import { StatistiquesJoueurService } from '../../services/statistiques-joueur.se
 import { StatistiquesJoueur } from '../../models/statistiques.model';
 
 // Page de gestion de l'affichage du classement.
-// Celui-ci trie d'abord par nombre de parties gagnées puis affine parle pourcentage de réussite
+// Celui-ci trie d'abord par nombre de parties gagnées puis affine par le pourcentage de réussite
 
 interface JoueurClassement {
   position: number;

@@ -13,7 +13,6 @@ import { JoueurPartieService } from "../../services/joueur-partie.service";
 // la gestion de cache (enregistrement du plateau et joueurs en cache, récupération du plateau et joueurs du cache)
 // la gestion du dé (pipé ou non pipé)
 // la création de la grille en fonctions des cases stockées en base de données
-//
 
 interface JoueurInit {
   pseudo: string;
@@ -35,6 +34,10 @@ export class PlateauComponent implements OnInit {
   cases: CasePlateau[] = [];
   lignes: CasePlateau[][] = [];
   casesAffichees: CasePlateau[] = [];
+
+  message: string = '';
+  canReroll: boolean = false;
+  pendingRerollColor: 'VERT' | 'JAUNE' | 'BLEU' | 'ROUGE' | null = null;
 
   listeCasesSequence: { [key: string]: CasePlateau[] } = {};
   pions: Pion[] = [];
@@ -260,18 +263,48 @@ export class PlateauComponent implements OnInit {
   // Fonction permettant de faire rouler le dé. retourne un nombre aléatoire entre 1 et 6
   rollDice() {
     if (this.isRolling) return;
+    if (this.canReroll && this.pionColor !== this.pendingRerollColor) return;
+
     this.isRolling = true;
+    this.canReroll = false;
+    this.pendingRerollColor = null;
+    this.message = '';
+
     this.diceValue = Math.floor(Math.random() * 6) + 1;
 
     setTimeout(() => {
       const pion = this.pions.find(p => p.joueurPartie?.couleur === this.pionColor);
-      console.log("valeur dé pour:",pion?.joueurPartie?.couleur,"=",this.diceValue);
-      if (pion) this.movePion(pion, this.diceValue);
+      if (!pion) {
+        this.isRolling = false;
+        return;
+      }
 
-      this.isRolling = false;
+      const previousEtat = pion.etatPion;
+
+      this.movePion(pion, this.diceValue);
+
       this.savePionsToStorage();
-      this.switchPion();
       this.saveGameState();
+
+      const sequence = this.listeCasesSequence[pion.joueurPartie!.couleur];
+      const currentCase = sequence.find(c => c.idCase === pion.casePlateauID);
+
+      if (
+        previousEtat !== 'ECURIE' &&
+        this.diceValue === 6 &&
+        currentCase &&
+        currentCase.position !== 20 &&
+        currentCase.position !== 21
+      ) {
+        this.message = 'Vous avez fait 6 ! Cliquez pour relancer.';
+        this.canReroll = true;
+        this.pendingRerollColor = this.pionColor;
+        this.isRolling = false;
+        return;
+      }
+
+      this.switchPion();
+      this.isRolling = false;
     }, 1000);
   }
 
