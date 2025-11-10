@@ -293,9 +293,7 @@ export class PlateauComponent implements OnInit {
       if (
         previousEtat !== 'ECURIE' &&
         this.diceValue === 6 &&
-        currentCase &&
-        currentCase.position !== 20 &&
-        currentCase.position !== 21
+        currentCase
       ) {
         this.message = 'Vous avez fait 6 ! Cliquez pour relancer.';
         this.canReroll = true;
