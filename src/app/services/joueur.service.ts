@@ -15,7 +15,7 @@ export class JoueurService {
   // Injection du HttpClient pour faire les requêtes HTTP
   constructor(private http: HttpClient) {}
 
-  // Crée un nouveau joueur avec le pseudo fourni
+  // Crée un nouveau joueur avec le pseudo fournit
   createJoueur(pseudo: string): Observable<Joueur> {
     return this.http.post<Joueur>(`${this.apiUrl}?pseudo=${encodeURIComponent(pseudo)}`, null);
   }
