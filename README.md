@@ -1,4 +1,5 @@
 # FrontSkeleton
+Anaïs DEWEVER - Pauline GOFFINET - Edwige LEBLANC - Marianne LEPERE
 
 ## Les installations nécessaire
 - Node JS : https://nodejs.org/en/download
