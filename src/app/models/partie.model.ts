@@ -1,5 +1,5 @@
 //modèle partie, on a besoin des status au cas où quelqu'un veut mettre une partie en pause
-//"EN ATTENTE"????
+
 export type EtatPartie = 'EN_ATTENTE' | 'EN_COURS' | 'TERMINEE';
 
 export interface Partie {

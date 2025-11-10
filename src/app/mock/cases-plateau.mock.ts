@@ -1,5 +1,6 @@
 import { CasePlateau } from '../models/case-plateau.model';
 
+// tableau qui nous permet de faire des tests sans base de données reliée
 export const MOCK_CASES_PLATEAU: CasePlateau[] = [
   // ----------------- ROUGE -----------------
   { idCase: 1, position: 1, couleur: 'ROUGE', typeCase: 'DEPART' },

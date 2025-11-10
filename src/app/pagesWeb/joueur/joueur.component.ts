@@ -6,6 +6,11 @@ import { JoueurPartieService } from "../../services/joueur-partie.service";
 import { Pion } from "../../models/pion.model";
 import { PionService } from "../../services/pion.service";
 
+// la page joueur affiche les informations liées au joueur connecté.
+// s'il n'y a aucun joueur connecté, invite l'utilisateur à se connecter en allant sur la page de connexion
+// une fois le joueur connecté, son ID et son pseudo est stocké dans le sessionStorage
+// il peut donc avoir accès sur la page joueur à l'historique de ses parties, ses statistiques et ses pions
+
 @Component({
   selector: 'app-joueur',
   templateUrl: './joueur.component.html',

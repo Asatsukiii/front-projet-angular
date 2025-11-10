@@ -2,6 +2,9 @@ import { Component, OnInit } from '@angular/core';
 import { StatistiquesJoueurService } from '../../services/statistiques-joueur.service';
 import { StatistiquesJoueur } from '../../models/statistiques.model';
 
+// Page de gestion de l'affichage du classement.
+// Celui-ci trie d'abord par nombre de parties gagnées puis affine parle pourcentage de réussite
+
 interface JoueurClassement {
   position: number;
   pseudo: string;

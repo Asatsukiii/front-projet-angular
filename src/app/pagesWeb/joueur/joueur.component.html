@@ -1,17 +1,17 @@
 <div *ngIf="notLoggedIn" class="joueur-container">
   <section class="not-logged-in-card card">
     <p>
-      You are not logged in. Please
-      <a routerLink="/login">login</a>
-      to see your player info.
+      Tu n'es pas connecté. Connecte toi sur
+      <a routerLink="/login">Connexion</a>
+      pour voir tes informations joueur !
     </p>
   </section>
 </div>
 
-<!-- Logged-in content -->
+<!-- contenu quand un joueur est connecté -->
 <div class="joueur-container" *ngIf="!notLoggedIn">
   <ng-container *ngIf="joueur; else loading">
-    <!-- 🧑 Profile -->
+
     <section class="card profile-card">
       <h2>{{ joueur.pseudo }}</h2>
       <div class="stats">
@@ -34,7 +34,6 @@
       </div>
     </section>
 
-    <!-- 🕹️ Parties -->
     <section class="card">
       <h2>Historique des Parties</h2>
       <ul class="game-list">
@@ -53,9 +52,8 @@
       </ul>
     </section>
 
-    <!-- 🧩 Pions -->
     <section class="card">
-      <h2>♟️ Pions du joueur</h2>
+      <h2>Pions du joueur</h2>
       <ul class="game-list" *ngIf="pion && pion.length > 0; else noPions">
         <li *ngFor="let p of pion">
           <div class="info">
@@ -71,7 +69,7 @@
     </section>
   </ng-container>
 
-  <!-- Loading -->
+  <!-- page de chargement -->
   <ng-template #loading>
     <p>Chargement du joueur...</p>
   </ng-template>

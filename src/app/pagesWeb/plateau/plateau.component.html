@@ -1,7 +1,7 @@
 <div class="plateau-container">
   <button class="help-btn" *ngIf="!showRules" (click)="toggleRules()">?</button>
 
-  <!-- Player setup form -->
+  <!-- form de création de partie -->
   <div class="player-setup" *ngIf="!partieCree">
     <div class="player-setup">
       Bonjour ! veuillez rentrer les pseudos des joueurs.
@@ -18,10 +18,10 @@
     <button class="player-setup" (click)="startPartie()">Commencer Partie</button>
   </div>
 
-  <!-- Game view -->
+  <!-- visuel de la partie -->
   <div *ngIf="partieCree" class="game-container">
     <div class="board-wrapper">
-      <!-- Player sidebar -->
+      <!-- affichage des infos des joueurs -->
       <div class="players-sidebar">
         <h3>Joueurs</h3>
         <div *ngFor="let joueur of joueursPartie; let i = index"
@@ -38,15 +38,16 @@
         </div>
       </div>
 
-      <!-- Plateau + dice -->
+      <!-- Plateau + dé -->
       <div class="board-and-dice">
-        <!-- Dice -->
+        <!-- dé -->
         <div class="dice-container">
           <div class="dice-wrapper">
             <div class="dice" [class.rolling]="isRolling">{{ diceValue || '-' }}</div>
             <div class="active-pion-indicator" [ngClass]="pionColor.toLowerCase()">{{ pionColor }}</div>
           </div>
-
+          <!-- Pour des raisons de tests, on a mis ici un dé pipé qui correspond a la fonction rollDiceTest () -->
+          <!-- Pour un fonctionnement normal du jeu, utiliser la fonction : rollDice()-->
           <button (click)="rollDiceTest()" [disabled]="isRolling">Lancer le dé</button>
         </div>
 
@@ -74,17 +75,19 @@
     </div>
   </div>
 
-  <!-- Rules panel -->
+  <!-- affichage des règles -->
+  <!-- dans le cadre de notre projets, les situations particulières n'ont pas été implémentées -->
   <div class="rules-panel" [class.open]="showRules">
     <div class="rules-header">
       <h2>Règles du jeu</h2>
       <button class="close-btn" (click)="toggleRules()">✕</button>
     </div>
+
     <div class="rules-content"><regles></regles></div>
   </div>
 </div>
 
-<!-- Victory modal -->
+<!-- affichage de victoire -->
 <div class="victory-modal" *ngIf="showVictoryModal">
   <div class="victory-content">
     <h2>🏆 Victoire !</h2>

@@ -7,6 +7,14 @@ import { Partie } from "../../models/partie.model";
 import { Pion, EtatPion } from "../../models/pion.model";
 import { JoueurPartieService } from "../../services/joueur-partie.service";
 
+
+// fichier de gestion de fonctionnement du plateau
+// On y retrouve beaucoup de fonctionnalités importantes:
+// la gestion de cache (enregistrement du plateau et joueurs en cache, récupération du plateau et joueurs du cache)
+// la gestion du dé (pipé ou non pipé)
+// la création de la grille en fonctions des cases stockées en base de données
+//
+
 interface JoueurInit {
   pseudo: string;
   couleur: 'ROUGE' | 'BLEU' | 'VERT' | 'JAUNE';
@@ -57,9 +65,9 @@ export class PlateauComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    // restore players form values first (so UI shows saved pseudos)
+
+    // on récupère les joueurs et l'état plateau à travers de partie, joueur partie et pionColor
     this.restorePlayersInit();
-    // restore partie state if any (partie, joueursPartie, pionColor)
     this.restoreGameState();
 
     this.caseService.getAll().subscribe({
@@ -68,7 +76,6 @@ export class PlateauComponent implements OnInit {
         this.lignes = this.generateGrille(data);
         this.casesAffichees = this.lignes.flat();
         this.listeCasesSequence = this.genererListeSequence(data);
-        // once sequences are ready, restore pions (their casePlateauIDs will match sequence)
         this.restorePionsFromStorage();
       },
       error: (err) => console.error('Erreur chargement plateau:', err)
@@ -77,10 +84,12 @@ export class PlateauComponent implements OnInit {
 
   /** ==================== Cache (localStorage) ==================== */
 
+  // on enregistre les joueurs dans le local storage
   savePlayersInit() {
     localStorage.setItem('joueursInit', JSON.stringify(this.joueursInit));
   }
 
+  // on récupère les joueurs dans le local storage
   private restorePlayersInit() {
     const saved = localStorage.getItem('joueursInit');
     if (saved) {
@@ -93,6 +102,7 @@ export class PlateauComponent implements OnInit {
     }
   }
 
+  // on enregistre l'état du plateau dans le local storage
   private saveGameState() {
     if (this.partie) {
       localStorage.setItem('partie', JSON.stringify(this.partie));
@@ -101,6 +111,7 @@ export class PlateauComponent implements OnInit {
     localStorage.setItem('pionColor', this.pionColor);
   }
 
+  // on récupère l'état du plateau dans le local storage
   private restoreGameState() {
     const partieLS = localStorage.getItem('partie');
     const joueursPartieLS = localStorage.getItem('joueursPartie');
@@ -116,13 +127,13 @@ export class PlateauComponent implements OnInit {
         console.warn('Erreur restoreGameState', e);
       }
     } else {
-      // If only partial data present, don't attempt to set partieCree to true.
       if (pionColorLS) {
         this.pionColor = pionColorLS as any;
       }
     }
   }
 
+  // on enregistre les pions dans le local storage
   private savePionsToStorage() {
     const toSave = this.pions.map(p => ({
       idPion: p.idPion,
@@ -134,6 +145,7 @@ export class PlateauComponent implements OnInit {
     localStorage.setItem('pions', JSON.stringify(toSave));
   }
 
+  // on récupère les pions dans le local storage
   private restorePionsFromStorage() {
     const saved = localStorage.getItem('pions');
     if (!saved) return;
@@ -161,6 +173,7 @@ export class PlateauComponent implements OnInit {
     }
   }
 
+// on reset l'emplacement des pions
   restartPions() {
     this.pions.forEach(p => {
       p.etatPion = 'ECURIE';
@@ -168,13 +181,12 @@ export class PlateauComponent implements OnInit {
     });
     this.savePionsToStorage();
   }
-
+// on quitte la partie en cours et on peut en recommencer une
   restartPartie() {
     const confirmation = confirm("Voulez-vous vraiment redémarrer la partie ?\nCela supprimera les données sauvegardées.");
 
     if (!confirmation) return;
 
-    // Reset all local state
     this.partieCree = false;
     this.joueursInit.forEach(j => j.pseudo = '');
     this.pions = [];
@@ -184,19 +196,22 @@ export class PlateauComponent implements OnInit {
     this.diceValue = 0;
     this.isRolling = false;
 
-    // Clear localStorage
+
     localStorage.removeItem('pions');
     localStorage.removeItem('partie');
     localStorage.removeItem('joueursPartie');
     localStorage.removeItem('pionColor');
     localStorage.removeItem('joueursInit');
 
-    // Force UI update
+
     alert("La partie a été réinitialisée.");
   }
 
   /** ==================== Partie / Joueurs / Pions ==================== */
 
+  // Fonction de gestion de la page de début de partie.
+  // La fonction récupère les pseudos après verification simple (pas de doublon et tous remplis)
+  // elle appelle les fonctions permettant de créer la partie complète à partir des pseudos et couleurs
   startPartie() {
     const pseudos = this.joueursInit.map(j => j.pseudo.trim());
     const couleurs = this.joueursInit.map(j => j.couleur);
@@ -206,7 +221,12 @@ export class PlateauComponent implements OnInit {
       return;
     }
 
-    // createPartieComplete now returns createdPlayers as well
+    const pseudosUniques = new Set(pseudos);
+    if (pseudosUniques.size !== pseudos.length) {
+      alert('Chaque joueur doit avoir un pseudo unique !');
+      return;
+    }
+
     this.PartieManagerService.createPartieComplete(pseudos, couleurs)
       .subscribe({
         next: (result) => {
@@ -216,12 +236,11 @@ export class PlateauComponent implements OnInit {
           this.pions = result.pions;
           this.partieCree = true;
 
-          // persist everything locally
+
           this.savePlayersInit();
           this.saveGameState();
           this.savePionsToStorage();
 
-          // notify user about auto-created players
           if (result.createdPlayers && result.createdPlayers.length > 0) {
             alert(
               'Les joueurs suivants n’existaient pas et ont été créés :\n\n' +
@@ -238,6 +257,7 @@ export class PlateauComponent implements OnInit {
 
   /** ==================== Déplacement des pions ==================== */
 
+  // Fonction permettant de faire rouler le dé. retourne un nombre aléatoire entre 1 et 6
   rollDice() {
     if (this.isRolling) return;
     this.isRolling = true;
@@ -255,6 +275,8 @@ export class PlateauComponent implements OnInit {
     }, 1000);
   }
 
+  // Fonction du dé pipé. fait 6 tant que le pion n'est pas sur l'arrivé de sa couleur.
+  // une fois sur son arrivée il fait 1, 2, 3, 4, 5, 6 pour monter l'échelle.
   rollDiceTest() {
     if (this.isRolling) return;
     this.isRolling = true;
@@ -278,8 +300,8 @@ export class PlateauComponent implements OnInit {
         const pos = caseCourante.position;
 
         if (pos === 14) valeur = 1;
-        else if (pos >= 16 && pos <= 20) valeur = pos - 14; // 16→1, 17→2, ..., 20→5
-        else if (pos === 21) valeur = 6; // terminé → 6 par défaut
+        else if (pos >= 16 && pos <= 20) valeur = pos - 14;
+        else if (pos === 21) valeur = 6;
         else valeur = 6;
       }
     }
@@ -305,6 +327,16 @@ export class PlateauComponent implements OnInit {
     localStorage.setItem('pionColor', this.pionColor);
   }
 
+
+  // fonction de gestion du mouvement du pion
+  // pour gérer les mouvements sur un plateau complexe, chaque couleur possède une séquence qui donne son chemin sur les cases du plateau.
+  // a chaque tour de cette fonction on récupère la couleur et la séquence associée.
+  // les mouvement du pion vont dépendre du type de case sur lequel il se trouve.
+  // pour sortir de l'écurie il doit faire un 6
+  // une fois sortie il avance du nombre donné par le lancé de dé
+  // une fois qu'il a fait un nombre lui permettant d'atteindre sa case arrivé, il s'arrête dessus et n'avance plus
+  // il doit alors monter l'échelle en faisant 1, puis 2, 3,... jusqu'a 6 ou il remporte la partie
+  // une fois que la partie est remporté par un pion, on appelle la fonction de gestion de victoire et on affiche la fenêtre de victoire
   movePion(pion: Pion, steps: number) {
     const couleur = pion.joueurPartie!.couleur;
     const sequence = this.listeCasesSequence[couleur];
@@ -332,7 +364,7 @@ export class PlateauComponent implements OnInit {
 
     const currentCase = sequence[idx];
 
-    // Échelle
+    // arrivé
     if (currentCase.position === 14 && currentCase.couleur === couleur) {
       console.log("le pion ",pion.joueurPartie?.couleur, " est sur l arrivee");
       if (steps === 1) {
@@ -344,6 +376,7 @@ export class PlateauComponent implements OnInit {
       return;
     }
 
+    //échelle
     if (currentCase.position >= 16 && currentCase.position < 21 && currentCase.couleur === couleur) {
 
       const nextPosition = currentCase.position + 1;
@@ -390,6 +423,7 @@ export class PlateauComponent implements OnInit {
 
   /** ==================== Séquences et plateau ==================== */
 
+  // cette fonction nous permet de générer les séquence pour chaque couleur.
   private genererListeSequence(cases: CasePlateau[]): { [key: string]: CasePlateau[] } {
     const sequences: { [key: string]: CasePlateau[] } = { VERT: [], ROUGE: [], BLEU: [], JAUNE: [] };
     const home = [16, 17, 18, 19, 20, 21];
@@ -446,6 +480,8 @@ export class PlateauComponent implements OnInit {
     return sequences;
   }
 
+
+  // cette fonction nous permet de générer la grille du jeu à partir des cases données du back
   generateGrille(cases: CasePlateau[]): CasePlateau[][] {
     const lignes: CasePlateau[][] = [];
     const find = (couleur: string, position: number) =>
@@ -476,6 +512,7 @@ export class PlateauComponent implements OnInit {
 
   /** ==================== VICTORY ==================== */
 
+  // affichage de l'écran de victoire
   afficherEcranVictoire(classement: { id: number; classement: number }[]) {
     this.classementFinal = [];
 
@@ -483,7 +520,6 @@ export class PlateauComponent implements OnInit {
       const jp = this.joueursPartie.find((j) => j.id === c.id);
       if (!jp) return;
 
-      // On crée une entrée temporaire
       const entry = {
         pseudo: 'Chargement...',
         couleur: jp.couleur,
@@ -499,10 +535,10 @@ export class PlateauComponent implements OnInit {
     this.showVictoryModal = true;
   }
 
+  // fonction de fermeture de la fenetre de victoire. on reset la page plateau et on redirige sur la page de début
   closeVictoryModal() {
     this.showVictoryModal = false;
 
-    // Reset pour permettre de saisir les pseudos
     this.partieCree = false;
     this.joueursInit.forEach(j => j.pseudo = '');
     this.pions = [];
@@ -515,10 +551,12 @@ export class PlateauComponent implements OnInit {
     localStorage.removeItem('joueursInit');
   }
 
+ // affiche / cache le panel regles sur la page plateau
   toggleRules() {
     this.showRules = !this.showRules;
   }
 
+  // affichage de l'image du pion de la couleur donnée sur la case donnée
   getPionImgForCase(c: CasePlateau): { src: string; alt: string }[] {
     if (!this.pions|| c.typeCase=="ECURIE") return [];
 
